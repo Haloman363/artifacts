@@ -3,11 +3,13 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
+import UpdateBanner from "./UpdateBanner.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter basename="/artifacts">
       <App />
+      <UpdateBanner />
     </BrowserRouter>
   </StrictMode>
 );
