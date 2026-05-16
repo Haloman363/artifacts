@@ -446,8 +446,9 @@ export default function LunchQuest() {
 
   /* ── render ──────────────────────────────────────────────────────────────── */
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#111", fontFamily: RS, overflow: "hidden", position: "relative" }}>
+    <div style={{ width: "100vw", height: "100vh", display: "flex", flexDirection: "column", fontFamily: RS }}>
       <BackButton />
+    <div style={{ flex: 1, background: "#111", overflow: "hidden", position: "relative" }}>
 
       {/* INPUT */}
       {screen === "input" && (
@@ -500,6 +501,7 @@ export default function LunchQuest() {
           )}
         </div>
       )}
+    </div>
     </div>
   );
 }
