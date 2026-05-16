@@ -21,6 +21,24 @@ const APPS = [
     title: "Nick System",
     bg: "bg-orange-900",
   },
+  {
+    path: "/brainrot",
+    icon: "🧠",
+    title: "Brainrot",
+    bg: "bg-purple-900",
+  },
+  {
+    path: "/subnet-calc",
+    icon: "🌐",
+    title: "Subnet Calc",
+    bg: "bg-cyan-900",
+  },
+  {
+    path: "/pomodoro",
+    icon: "🍅",
+    title: "Pomodoro",
+    bg: "bg-red-900",
+  },
 ];
 
 export default function Hub() {
