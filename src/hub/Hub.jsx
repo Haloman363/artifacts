@@ -6,26 +6,20 @@ const APPS = [
   {
     path: "/cruise-guide",
     icon: "🚢",
-    title: "2026 Cruise Guide",
-    desc: "Nassau · Princess Cays · Amber Cove · Grand Turk",
-    bg: "from-blue-900 to-cyan-900",
-    border: "border-blue-700",
+    title: "Cruise Guide",
+    bg: "bg-blue-900",
   },
   {
     path: "/lunch-quest",
     icon: "⚔️",
-    title: "Lunch Quest 3D",
-    desc: "Enter restaurants. May the mightiest meal prevail.",
-    bg: "from-yellow-900 to-amber-900",
-    border: "border-yellow-700",
+    title: "Lunch Quest",
+    bg: "bg-yellow-900",
   },
   {
     path: "/nick-measurement",
     icon: "🦅",
-    title: "Nick Measurement System™",
-    desc: "Converting units to things Nick can actually understand.",
-    bg: "from-yellow-800 to-orange-900",
-    border: "border-yellow-600",
+    title: "Nick System",
+    bg: "bg-orange-900",
   },
 ];
 
@@ -37,7 +31,6 @@ export default function Hub() {
   const {
     needRefresh: [needRefresh],
     updateServiceWorker,
-    offlineReady: [offlineReady],
   } = useRegisterSW();
 
   async function handleRefresh() {
@@ -49,39 +42,33 @@ export default function Hub() {
     setStatus(null);
     try {
       const reg = await navigator.serviceWorker.getRegistration();
-      if (reg) {
-        await reg.update();
-        setTimeout(() => {
-          setChecking(false);
-          setStatus("up-to-date");
-          setTimeout(() => setStatus(null), 3000);
-        }, 1500);
-      } else {
+      if (reg) await reg.update();
+      setTimeout(() => {
         setChecking(false);
         setStatus("up-to-date");
         setTimeout(() => setStatus(null), 3000);
-      }
+      }, 1500);
     } catch {
       setChecking(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-4 py-10">
-      <div className="max-w-lg mx-auto">
-        <h1 className="text-2xl font-bold text-center mb-1">Artifacts</h1>
-        <p className="text-gray-500 text-sm text-center mb-6">Jaymes's Claude collection</p>
+    <div className="min-h-screen bg-gray-950 text-white px-4 pt-12 pb-10">
+      <div className="max-w-sm mx-auto">
+        <h1 className="text-xl font-bold text-center mb-8">Artifacts</h1>
 
-        <div className="flex flex-col gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-6 mb-12">
           {APPS.map((app) => (
             <button
               key={app.path}
               onClick={() => navigate(app.path)}
-              className={`w-full text-left p-5 rounded-2xl bg-gradient-to-br ${app.bg} border ${app.border} active:scale-95 transition-transform`}
+              className="flex flex-col items-center gap-2 active:scale-90 transition-transform"
             >
-              <div className="text-4xl mb-2">{app.icon}</div>
-              <div className="font-semibold text-lg leading-tight">{app.title}</div>
-              <div className="text-sm text-gray-300 mt-1 leading-snug">{app.desc}</div>
+              <div className={`w-16 h-16 rounded-2xl ${app.bg} flex items-center justify-center text-3xl shadow-lg`}>
+                {app.icon}
+              </div>
+              <span className="text-xs text-gray-300 text-center leading-tight">{app.title}</span>
             </button>
           ))}
         </div>
@@ -89,7 +76,7 @@ export default function Hub() {
         <button
           onClick={handleRefresh}
           disabled={checking}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-800 text-gray-500 text-sm active:opacity-60 disabled:opacity-40"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-800 text-gray-600 text-xs active:opacity-60 disabled:opacity-40"
         >
           {needRefresh ? (
             <span className="text-blue-400 font-semibold">Update available — tap to reload</span>
