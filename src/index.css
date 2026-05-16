@@ -8,4 +8,5 @@
 
 body {
   overscroll-behavior: none;
+  padding-bottom: env(safe-area-inset-bottom);
 }

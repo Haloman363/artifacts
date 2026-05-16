@@ -72,7 +72,7 @@ export default function Hub() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white px-4 pt-12 pb-10">
+    <div className="min-h-screen bg-gray-950 text-white px-4 pb-10" style={{ paddingTop: "calc(env(safe-area-inset-top) + 2.5rem)" }}>
       <div className="max-w-sm mx-auto">
         <h1 className="text-xl font-bold text-center mb-8">Artifacts</h1>
 

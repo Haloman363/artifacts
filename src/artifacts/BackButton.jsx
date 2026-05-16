@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 export default function BackButton() {
   const navigate = useNavigate();
   return (
-    <div className="w-full bg-gray-900 border-b border-gray-800 px-4 py-2 flex items-center">
+    <div className="w-full bg-gray-900 border-b border-gray-800 px-4 flex items-end" style={{ paddingTop: "calc(env(safe-area-inset-top) + 0.5rem)", paddingBottom: "0.5rem" }}>
       <button
         onClick={() => navigate("/")}
         className="flex items-center gap-1.5 text-gray-400 text-sm font-medium active:opacity-60"
