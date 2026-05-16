@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Hub from "./hub/Hub.jsx";
 import CruiseGuide from "./artifacts/CruiseGuide.jsx";
-import LunchQuest from "./artifacts/LunchQuest.jsx";
+import LunchQuest from "./artifacts/LunchQuest.tsx";
 import NickMeasurement from "./artifacts/NickMeasurement.jsx";
 
 export default function App() {
