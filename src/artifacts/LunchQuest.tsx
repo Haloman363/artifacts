@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import BackButton from "./BackButton.jsx";
 
 /* ── constants ─────────────────────────────────────────────────────────────── */
 const CLASSES = [
@@ -446,9 +445,7 @@ export default function LunchQuest() {
 
   /* ── render ──────────────────────────────────────────────────────────────── */
   return (
-    <div style={{ width: "100vw", height: "100vh", display: "flex", flexDirection: "column", fontFamily: RS }}>
-      <BackButton />
-    <div style={{ flex: 1, background: "#111", overflow: "hidden", position: "relative" }}>
+    <div style={{ background: "#111", overflow: "hidden", position: "relative", fontFamily: RS }}>
 
       {/* INPUT */}
       {screen === "input" && (
@@ -501,7 +498,6 @@ export default function LunchQuest() {
           )}
         </div>
       )}
-    </div>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Search, MapPin, Clock, DollarSign, Star, Navigation, ChevronDown, ChevronUp, X } from "lucide-react";
-import BackButton from "./BackButton.jsx";
 
 // ── DATA ─────────────────────────────────────────────────────────────────────
 
@@ -301,7 +300,7 @@ export default function CruiseGuide() {
 
   return (
     <div className="min-h-screen bg-gray-950 font-sans">
-      <BackButton />
+
       {/* ── HEADER ── */}
       <div className="bg-gray-900 border-b border-gray-800 sticky top-0 z-20">
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-3">

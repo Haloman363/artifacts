@@ -1,5 +1,4 @@
 import { useState } from "react";
-import BackButton from "./BackButton.jsx";
 
 const PROMPTS = {
   genz: "You are a Gen Z brainrot translator. Rewrite the message in pure Gen Z internet slang chaos. Use terms like: no cap, fr fr, bussin, lowkey, slay, periodt, rizz, based, mid, rent free, ate and left no crumbs, main character, sending me, W, L, NPC, delulu, situationship, era. Make it unhinged but still vaguely convey the original meaning. Output only the translated message.",
@@ -108,7 +107,7 @@ export default function App() {
 
   return (
     <div style={s.wrap}>
-      <BackButton />
+
       <div style={s.titleRow}>
         <h1 style={s.h1}>Brainrot Translator</h1>
         <span style={s.sub}>paste your boring business text below</span>

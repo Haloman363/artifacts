@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef } from "react";
-import BackButton from "./BackButton.jsx";
 
 // ─── IP / subnet math ────────────────────────────────────────────────────────
 function ipToInt(ip) {
@@ -278,7 +277,7 @@ export default function App() {
 
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", maxWidth: 900, margin: "0 auto", padding: "16px 12px" }}>
-      <BackButton />
+
       {/* Header */}
       <div style={{ background: "#1a1a2e", color: "#e0e0ff", borderRadius: 8, padding: "14px 20px", marginBottom: 16 }}>
         <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: 0.5 }}>🌐 Visual Subnet Calculator</h1>

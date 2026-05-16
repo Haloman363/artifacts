@@ -1,5 +1,4 @@
 import { useState } from "react";
-import BackButton from "./BackButton.jsx";
 
 // All weights convert to kg, lengths to meters, volumes to liters, areas to m²
 const CATEGORIES = {
@@ -139,7 +138,7 @@ export default function App() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "Georgia, serif" }}>
-      <BackButton />
+
       {/* Header */}
       <div style={{
         background: "linear-gradient(135deg, #8b6914 0%, #ffd700 45%, #b8860b 75%, #8b6914 100%)",
