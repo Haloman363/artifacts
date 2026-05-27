@@ -6,6 +6,7 @@ import BrainrotTranslator from "./artifacts/BrainrotTranslator.tsx";
 import SubnetCalc from "./artifacts/SubnetCalc.tsx";
 import Pomodoro from "./artifacts/Pomodoro.jsx";
 import ClaudeTamagotchi from "./artifacts/ClaudeTamagotchi.jsx";
+import CarMaintenance from "./artifacts/CarMaintenance.jsx";
 import BackButton from "./artifacts/BackButton.jsx";
 
 function ArtifactLayout() {
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/subnet-calc" element={<SubnetCalc />} />
         <Route path="/pomodoro" element={<Pomodoro />} />
         <Route path="/tamagotchi" element={<ClaudeTamagotchi />} />
+        <Route path="/car-maintenance" element={<CarMaintenance />} />
       </Route>
     </Routes>
   );

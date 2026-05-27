@@ -39,6 +39,12 @@ const APPS = [
     title: "Claudagotchi",
     bg: "bg-purple-950",
   },
+  {
+    path: "/car-maintenance",
+    icon: "🚗",
+    title: "Car Maintenance",
+    bg: "bg-green-900",
+  },
 ];
 
 export default function Hub() {
