@@ -141,6 +141,56 @@ function MileageUpdater({ currentMileage, onUpdate }) {
   );
 }
 
+function LogServiceForm({ service, car, onSave, onCancel }) {
+  const today = new Date().toISOString().split("T")[0];
+  const [date, setDate]     = useState(service.lastServiceDate ?? today);
+  const [mileage, setMileage] = useState(
+    service.lastServiceMileage?.toString() ?? car.currentMileage.toString()
+  );
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSave({
+      lastServiceDate: date || null,
+      lastServiceMileage: parseInt(mileage, 10) || null,
+    });
+  }
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-600";
+  const labelCls = "block text-xs text-gray-400 mb-1";
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={onCancel}>
+      <div
+        className="bg-gray-900 border border-gray-800 rounded-t-2xl w-full max-w-sm px-5 py-6"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-lg">Log Service</h2>
+          <button onClick={onCancel}><X size={20} className="text-gray-400" /></button>
+        </div>
+        <p className="text-sm text-gray-400 mb-4">{service.name}</p>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Service Date</label>
+            <input className={inputCls} type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+          <div>
+            <label className={labelCls}>Mileage at Service</label>
+            <input className={inputCls} type="number" min="0" value={mileage} onChange={e => setMileage(e.target.value)} />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-green-700 hover:bg-green-600 active:scale-95 transition-transform rounded-xl py-3 font-semibold text-sm mt-1"
+          >
+            Save Service Record
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function CarForm({ initial, onSave, onCancel }) {
   const [nickname, setNickname] = useState(initial?.nickname ?? "");
   const [year, setYear]         = useState(initial?.year ?? "");
@@ -265,6 +315,20 @@ export default function CarMaintenance() {
     setView("hub");
   }
 
+  function handleLogService(fields) {
+    setCars(prev => prev.map(c => {
+      if (c.id !== selectedCarId) return c;
+      return {
+        ...c,
+        services: c.services.map(s =>
+          s.id === selectedServiceId ? { ...s, ...fields } : s
+        ),
+      };
+    }));
+    setSelectedServiceId(null);
+    setView("car");
+  }
+
   if (view === "hub") {
     return (
       <div className="min-h-screen bg-gray-950 text-white px-4 pb-10 pt-6">
@@ -321,6 +385,17 @@ export default function CarMaintenance() {
 
   if (view === "edit-car" && selectedCar) {
     return <CarForm initial={selectedCar} onSave={handleEditCar} onCancel={() => setView("car")} />;
+  }
+
+  if (view === "log-service" && selectedCar && selectedService) {
+    return (
+      <LogServiceForm
+        service={selectedService}
+        car={selectedCar}
+        onSave={handleLogService}
+        onCancel={() => { setSelectedServiceId(null); setView("car"); }}
+      />
+    );
   }
 
   if (view === "car" && selectedCar) {
