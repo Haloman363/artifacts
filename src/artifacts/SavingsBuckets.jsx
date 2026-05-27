@@ -30,6 +30,63 @@ function fmtDate(iso) {
   return new Date(iso + "T00:00:00").toLocaleDateString();
 }
 
+function BucketForm({ initial, onSave, onCancel }) {
+  const [name, setName]       = useState(initial?.name ?? "");
+  const [balance, setBalance] = useState(initial?.balance?.toString() ?? "");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSave({ name: name.trim(), balance: parseFloat(balance) || 0 });
+  }
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-600";
+  const labelCls = "block text-xs text-gray-400 mb-1";
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={onCancel}>
+      <div
+        className="bg-gray-900 border border-gray-800 rounded-t-2xl w-full max-w-sm px-5 py-6"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-lg">{initial ? "Edit Bucket" : "New Bucket"}</h2>
+          <button onClick={onCancel}><X size={20} className="text-gray-400" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Name</label>
+            <input
+              className={inputCls}
+              placeholder="e.g. Vacation"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className={labelCls}>{initial ? "Current Balance ($)" : "Starting Balance ($)"}</label>
+            <input
+              className={inputCls}
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={balance}
+              onChange={e => setBalance(e.target.value)}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-yellow-700 hover:bg-yellow-600 active:scale-95 transition-transform rounded-xl py-3 font-semibold text-sm mt-2"
+          >
+            {initial ? "Save Changes" : "Create Bucket"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function SavingsBuckets() {
   const [data, setData] = useState(loadData);
   const [view, setView] = useState("hub");
@@ -95,6 +152,62 @@ export default function SavingsBuckets() {
         </div>
       </div>
     );
+  }
+
+  // ── Bucket handlers ───────────────────────────────────────────────────────
+  function handleAddBucket({ name, balance }) {
+    updateData({
+      buckets: [
+        ...buckets,
+        {
+          id: makeId(),
+          name,
+          balance,
+          transactions: balance !== 0 ? [{
+            id: makeId(),
+            type: "set",
+            amount: balance,
+            description: "Starting balance",
+            date: new Date().toISOString().split("T")[0],
+          }] : [],
+        },
+      ],
+    });
+    setView("hub");
+  }
+
+  function handleEditBucket({ name, balance }) {
+    updateData({
+      buckets: buckets.map(b => {
+        if (b.id !== selectedId) return b;
+        const prev = b.balance;
+        const newTx = balance !== prev ? [{
+          id: makeId(),
+          type: "set",
+          amount: balance,
+          description: "Balance updated",
+          date: new Date().toISOString().split("T")[0],
+        }] : [];
+        return { ...b, name, balance, transactions: [...b.transactions, ...newTx] };
+      }),
+    });
+    setView("detail");
+  }
+
+  function handleDeleteBucket(id) {
+    updateData({ buckets: buckets.filter(b => b.id !== id) });
+    setSelectedId(null);
+    setView("hub");
+  }
+
+  if (view === "add-bucket") {
+    return <BucketForm onSave={handleAddBucket} onCancel={() => setView("hub")} />;
+  }
+
+  if (view === "edit-bucket") {
+    const b = buckets.find(b => b.id === selectedId);
+    if (!b) return null;
+    return <BucketForm initial={b} onSave={handleEditBucket} onCancel={() => setView("detail")} />;
   }
 
   return null;
