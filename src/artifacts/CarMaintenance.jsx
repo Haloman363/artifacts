@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Car, Wrench, Plus, ChevronRight, CheckCircle, AlertTriangle, XCircle, X, Edit2 } from "lucide-react";
+import { Car, Plus, ChevronRight, CheckCircle, AlertTriangle, XCircle, X, Edit2 } from "lucide-react";
 
 const STORAGE_KEY = "car-maintenance-v1";
 
