@@ -278,13 +278,78 @@ function CarForm({ initial, onSave, onCancel }) {
   );
 }
 
+async function requestNotificationPermission() {
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "denied") return false;
+  const result = await Notification.requestPermission();
+  return result === "granted";
+}
+
+function fireMaintenanceNotifications(cars) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  for (const car of cars) {
+    const label = car.nickname || `${car.year} ${car.make} ${car.model}`.trim() || "Your car";
+    for (const service of car.services) {
+      const st = serviceStatus(service, car.currentMileage);
+      if (st === "red") {
+        new Notification(`${label} — Overdue`, {
+          body: `${service.name} is overdue. Check your maintenance tracker.`,
+          icon: "/icons/icon-192.png",
+          tag: `${car.id}-${service.id}`,
+        });
+      } else if (st === "yellow") {
+        new Notification(`${label} — Due Soon`, {
+          body: `${service.name} is coming up. Check your maintenance tracker.`,
+          icon: "/icons/icon-192.png",
+          tag: `${car.id}-${service.id}`,
+        });
+      }
+    }
+  }
+}
+
+function NotificationPrompt({ onGrant, onDismiss }) {
+  return (
+    <div className="fixed bottom-4 left-4 right-4 max-w-sm mx-auto bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3 z-40 shadow-xl">
+      <p className="text-sm font-medium mb-1">Get maintenance reminders?</p>
+      <p className="text-xs text-gray-400 mb-3">We'll notify you when a service is due or overdue.</p>
+      <div className="flex gap-2">
+        <button
+          onClick={onGrant}
+          className="flex-1 bg-green-700 hover:bg-green-600 active:scale-95 transition-transform rounded-xl py-2 text-sm font-medium"
+        >
+          Allow
+        </button>
+        <button
+          onClick={onDismiss}
+          className="flex-1 bg-gray-700 hover:bg-gray-600 active:scale-95 transition-transform rounded-xl py-2 text-sm"
+        >
+          Not now
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function CarMaintenance() {
   const [cars, setCars] = useState(loadCars);
   const [view, setView] = useState("hub"); // "hub" | "car" | "add-car" | "edit-car" | "log-service"
   const [selectedCarId, setSelectedCarId] = useState(null);
   const [selectedServiceId, setSelectedServiceId] = useState(null);
+  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
 
   useEffect(() => { saveCars(cars); }, [cars]);
+
+  useEffect(() => {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "granted") {
+      fireMaintenanceNotifications(cars);
+    } else if (Notification.permission === "default") {
+      // Show prompt only if user has at least one car
+      if (cars.length > 0) setShowNotifPrompt(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedCar = cars.find(c => c.id === selectedCarId) ?? null;
   const selectedService = selectedCar?.services.find(s => s.id === selectedServiceId) ?? null;
@@ -375,6 +440,17 @@ export default function CarMaintenance() {
               );
             })}
           </div>
+
+          {showNotifPrompt && (
+            <NotificationPrompt
+              onGrant={async () => {
+                setShowNotifPrompt(false);
+                const granted = await requestNotificationPermission();
+                if (granted) fireMaintenanceNotifications(cars);
+              }}
+              onDismiss={() => setShowNotifPrompt(false)}
+            />
+          )}
         </div>
       </div>
     );
