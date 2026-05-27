@@ -87,6 +87,137 @@ function BucketForm({ initial, onSave, onCancel }) {
   );
 }
 
+function WithdrawalForm({ onSave, onCancel }) {
+  const today = new Date().toISOString().split("T")[0];
+  const [amount, setAmount]           = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate]               = useState(today);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const amt = parseFloat(amount);
+    if (isNaN(amt) || amt <= 0) return;
+    onSave({ amount: amt, description: description.trim(), date });
+  }
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-600";
+  const labelCls = "block text-xs text-gray-400 mb-1";
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={onCancel}>
+      <div
+        className="bg-gray-900 border border-gray-800 rounded-t-2xl w-full max-w-sm px-5 py-6"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-lg">Log Purchase</h2>
+          <button onClick={onCancel}><X size={20} className="text-gray-400" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Amount ($)</label>
+            <input
+              className={inputCls}
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="0.00"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              required
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Description</label>
+            <input
+              className={inputCls}
+              placeholder="e.g. Gas, Groceries"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Date</label>
+            <input
+              className={inputCls}
+              type="date"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-red-700 hover:bg-red-600 active:scale-95 transition-transform rounded-xl py-3 font-semibold text-sm mt-2"
+          >
+            Log Purchase
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function SetBalanceForm({ currentBalance, onSave, onCancel }) {
+  const [amount, setAmount]           = useState(currentBalance.toString());
+  const [description, setDescription] = useState("");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const amt = parseFloat(amount);
+    if (isNaN(amt)) return;
+    onSave({ amount: amt, description: description.trim() || "Balance set" });
+  }
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-600";
+  const labelCls = "block text-xs text-gray-400 mb-1";
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={onCancel}>
+      <div
+        className="bg-gray-900 border border-gray-800 rounded-t-2xl w-full max-w-sm px-5 py-6"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-lg">Set Balance</h2>
+          <button onClick={onCancel}><X size={20} className="text-gray-400" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>New Balance ($)</label>
+            <input
+              className={inputCls}
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              required
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Reason (optional)</label>
+            <input
+              className={inputCls}
+              placeholder="e.g. Added cash deposit"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-700 hover:bg-blue-600 active:scale-95 transition-transform rounded-xl py-3 font-semibold text-sm mt-2"
+          >
+            Update Balance
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function SavingsBuckets() {
   const [data, setData] = useState(loadData);
   const [view, setView] = useState("hub");
@@ -290,6 +421,68 @@ export default function SavingsBuckets() {
           </button>
         </div>
       </div>
+    );
+  }
+
+  // ── Transaction handlers ──────────────────────────────────────────────────
+  function handleWithdrawal({ amount, description, date }) {
+    updateData({
+      buckets: buckets.map(b => {
+        if (b.id !== selectedId) return b;
+        return {
+          ...b,
+          balance: b.balance - amount,
+          transactions: [
+            ...b.transactions,
+            { id: makeId(), type: "withdrawal", amount, description, date },
+          ],
+        };
+      }),
+    });
+    setView("detail");
+  }
+
+  function handleSetBalance({ amount, description }) {
+    updateData({
+      buckets: buckets.map(b => {
+        if (b.id !== selectedId) return b;
+        return {
+          ...b,
+          balance: amount,
+          transactions: [
+            ...b.transactions,
+            {
+              id: makeId(),
+              type: "set",
+              amount,
+              description,
+              date: new Date().toISOString().split("T")[0],
+            },
+          ],
+        };
+      }),
+    });
+    setView("detail");
+  }
+
+  if (view === "add-withdrawal") {
+    return (
+      <WithdrawalForm
+        onSave={handleWithdrawal}
+        onCancel={() => setView("detail")}
+      />
+    );
+  }
+
+  if (view === "set-balance") {
+    const b = buckets.find(b => b.id === selectedId);
+    if (!b) return null;
+    return (
+      <SetBalanceForm
+        currentBalance={b.balance}
+        onSave={handleSetBalance}
+        onCancel={() => setView("detail")}
+      />
     );
   }
 
