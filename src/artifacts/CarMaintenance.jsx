@@ -89,7 +89,7 @@ function StatusBadge({ status }) {
   return                          <CheckCircle  size={18} className="text-green-400 shrink-0" />;
 }
 
-function serviceSubtitle(service, currentMileage) {
+function serviceSubtitle(service) {
   const parts = [];
   if (service.lastServiceDate) {
     const d = new Date(service.lastServiceDate);
@@ -324,7 +324,6 @@ export default function CarMaintenance() {
   }
 
   if (view === "car" && selectedCar) {
-    const status = carStatus(selectedCar);
     const label = selectedCar.nickname || `${selectedCar.year} ${selectedCar.make} ${selectedCar.model}`.trim() || "Unnamed Car";
 
     return (
@@ -367,7 +366,7 @@ export default function CarMaintenance() {
                   <StatusBadge status={st} />
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{service.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{serviceSubtitle(service, selectedCar.currentMileage)}</p>
+                    <p className="text-xs text-gray-500 truncate">{serviceSubtitle(service)}</p>
                   </div>
                   <ChevronRight size={16} className="text-gray-600 shrink-0" />
                 </button>
