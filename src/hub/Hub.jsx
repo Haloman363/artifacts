@@ -4,12 +4,6 @@ import { useRegisterSW } from "virtual:pwa-register/react";
 
 const APPS = [
   {
-    path: "/cruise-guide",
-    icon: "🚢",
-    title: "Cruise Guide",
-    bg: "bg-blue-900",
-  },
-  {
     path: "/lunch-quest",
     icon: "⚔️",
     title: "Lunch Quest",
@@ -38,6 +32,12 @@ const APPS = [
     icon: "🍅",
     title: "Pomodoro",
     bg: "bg-red-900",
+  },
+  {
+    path: "/tamagotchi",
+    icon: "🦞",
+    title: "Claudagotchi",
+    bg: "bg-purple-950",
   },
 ];
 
