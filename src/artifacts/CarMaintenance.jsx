@@ -291,6 +291,8 @@ function fireMaintenanceNotifications(cars) {
   for (const car of cars) {
     const label = car.nickname || `${car.year} ${car.make} ${car.model}`.trim() || "Your car";
     for (const service of car.services) {
+      // Skip services with no history — yellow from no-history is not actionable
+      if (service.lastServiceMileage == null && service.lastServiceDate == null) continue;
       const st = serviceStatus(service, car.currentMileage);
       if (st === "red") {
         new Notification(`${label} — Overdue`, {
