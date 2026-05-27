@@ -210,5 +210,88 @@ export default function SavingsBuckets() {
     return <BucketForm initial={b} onSave={handleEditBucket} onCancel={() => setView("detail")} />;
   }
 
+  // ── Detail view ───────────────────────────────────────────────────────────
+  if (view === "detail") {
+    const b = buckets.find(b => b.id === selectedId);
+    if (!b) return null;
+
+    const sorted = b.transactions.slice().sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+
+    return (
+      <div className="min-h-screen bg-gray-950 text-white px-4 pb-10 pt-6">
+        <div className="max-w-sm mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={() => setView("hub")}
+              className="text-gray-400 text-sm active:opacity-60 flex items-center gap-1"
+            >
+              <ArrowLeft size={16} /> Back
+            </button>
+            <button
+              onClick={() => setView("edit-bucket")}
+              className="text-gray-400 active:opacity-60"
+            >
+              <Edit2 size={16} />
+            </button>
+          </div>
+
+          {/* Balance card */}
+          <div className="bg-yellow-950 border border-yellow-900 rounded-2xl px-5 py-5 mb-6 text-center">
+            <p className="text-xs text-yellow-400 mb-1">{b.name}</p>
+            <p className={`text-4xl font-bold ${b.balance < 0 ? "text-red-400" : "text-white"}`}>
+              {fmtMoney(b.balance)}
+            </p>
+          </div>
+
+          {/* Action buttons */}
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <button
+              onClick={() => setView("add-withdrawal")}
+              className="flex items-center justify-center gap-2 bg-red-900 hover:bg-red-800 active:scale-95 transition-transform rounded-xl py-3 text-sm font-semibold"
+            >
+              <Minus size={16} /> Log Purchase
+            </button>
+            <button
+              onClick={() => setView("set-balance")}
+              className="flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 active:scale-95 transition-transform rounded-xl py-3 text-sm font-semibold"
+            >
+              <RefreshCw size={16} /> Set Balance
+            </button>
+          </div>
+
+          {/* Transaction log */}
+          <p className="text-xs text-gray-500 uppercase tracking-wide mb-3">Transaction History</p>
+
+          {sorted.length === 0 && (
+            <p className="text-center text-gray-600 text-sm mt-8">No transactions yet.</p>
+          )}
+
+          <div className="flex flex-col gap-2">
+            {sorted.map(tx => (
+              <div key={tx.id} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{tx.description}</p>
+                  <p className="text-xs text-gray-500">{fmtDate(tx.date)}</p>
+                </div>
+                <p className={`text-sm font-semibold ml-3 shrink-0 ${tx.type === "withdrawal" ? "text-red-400" : "text-blue-400"}`}>
+                  {tx.type === "withdrawal" ? `-${fmtMoney(tx.amount)}` : fmtMoney(tx.amount)}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Delete bucket */}
+          <button
+            onClick={() => { if (confirm(`Delete "${b.name}"? This cannot be undone.`)) handleDeleteBucket(b.id); }}
+            className="w-full text-xs text-red-800 hover:text-red-600 active:opacity-60 py-3 mt-4"
+          >
+            Delete this bucket
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return null;
 }
