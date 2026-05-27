@@ -83,6 +83,64 @@ function carStatus(car) {
   return "green";
 }
 
+function StatusBadge({ status }) {
+  if (status === "red")    return <XCircle    size={18} className="text-red-400    shrink-0" />;
+  if (status === "yellow") return <AlertTriangle size={18} className="text-yellow-400 shrink-0" />;
+  return                          <CheckCircle  size={18} className="text-green-400 shrink-0" />;
+}
+
+function serviceSubtitle(service, currentMileage) {
+  const parts = [];
+  if (service.lastServiceDate) {
+    const d = new Date(service.lastServiceDate);
+    parts.push(`Last: ${d.toLocaleDateString()}`);
+  }
+  if (service.lastServiceMileage != null) {
+    const next = service.lastServiceMileage + service.intervalMiles;
+    parts.push(`Next: ${next.toLocaleString()} mi`);
+  }
+  if (parts.length === 0) return "No history";
+  return parts.join(" · ");
+}
+
+function MileageUpdater({ currentMileage, onUpdate }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(currentMileage.toString());
+
+  function submit() {
+    const n = parseInt(val, 10);
+    if (!isNaN(n) && n >= 0) onUpdate(n);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-2 mt-2">
+        <input
+          autoFocus
+          type="number"
+          min="0"
+          value={val}
+          onChange={e => setVal(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter") submit(); if (e.key === "Escape") setEditing(false); }}
+          className="flex-1 bg-gray-800 border border-green-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none"
+        />
+        <button onClick={submit} className="text-green-400 text-sm font-medium active:opacity-60">Save</button>
+        <button onClick={() => setEditing(false)} className="text-gray-500 text-sm active:opacity-60">Cancel</button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => { setVal(currentMileage.toString()); setEditing(true); }}
+      className="text-sm text-gray-400 mt-1 active:opacity-60"
+    >
+      {currentMileage.toLocaleString()} mi · <span className="text-green-600">update</span>
+    </button>
+  );
+}
+
 function CarForm({ initial, onSave, onCancel }) {
   const [nickname, setNickname] = useState(initial?.nickname ?? "");
   const [year, setYear]         = useState(initial?.year ?? "");
@@ -263,6 +321,70 @@ export default function CarMaintenance() {
 
   if (view === "edit-car" && selectedCar) {
     return <CarForm initial={selectedCar} onSave={handleEditCar} onCancel={() => setView("car")} />;
+  }
+
+  if (view === "car" && selectedCar) {
+    const status = carStatus(selectedCar);
+    const label = selectedCar.nickname || `${selectedCar.year} ${selectedCar.make} ${selectedCar.model}`.trim() || "Unnamed Car";
+
+    return (
+      <div className="min-h-screen bg-gray-950 text-white px-4 pb-10 pt-6">
+        <div className="max-w-sm mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-1">
+            <button onClick={() => setView("hub")} className="text-gray-400 text-sm active:opacity-60">← Back</button>
+            <button
+              onClick={() => setView("edit-car")}
+              className="text-gray-400 active:opacity-60"
+            >
+              <Edit2 size={16} />
+            </button>
+          </div>
+          <h1 className="text-xl font-bold mb-0.5">{label}</h1>
+          <p className="text-sm text-gray-500 mb-1">
+            {[selectedCar.year, selectedCar.make, selectedCar.model].filter(Boolean).join(" ")}
+          </p>
+
+          {/* Mileage update */}
+          <MileageUpdater
+            currentMileage={selectedCar.currentMileage}
+            onUpdate={miles => {
+              setCars(prev => prev.map(c => c.id === selectedCarId ? { ...c, currentMileage: miles } : c));
+            }}
+          />
+
+          {/* Service list */}
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mt-5 mb-3">Services</h2>
+          <div className="flex flex-col gap-2">
+            {selectedCar.services.map(service => {
+              const st = serviceStatus(service, selectedCar.currentMileage);
+              return (
+                <button
+                  key={service.id}
+                  onClick={() => { setSelectedServiceId(service.id); setView("log-service"); }}
+                  className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 text-left w-full active:scale-95 transition-transform"
+                >
+                  <StatusBadge status={st} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{service.name}</p>
+                    <p className="text-xs text-gray-500 truncate">{serviceSubtitle(service, selectedCar.currentMileage)}</p>
+                  </div>
+                  <ChevronRight size={16} className="text-gray-600 shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Delete car */}
+          <button
+            onClick={() => { if (confirm(`Delete ${label}?`)) handleDeleteCar(selectedCar.id); }}
+            className="mt-8 w-full text-xs text-red-700 hover:text-red-500 active:opacity-60 py-2"
+          >
+            Delete this car
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return <div className="min-h-screen bg-gray-950 text-white px-4 pt-6 text-gray-500 text-sm text-center">Loading...</div>;
