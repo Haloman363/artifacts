@@ -527,6 +527,9 @@ export default function CarMaintenance() {
               );
             })}
           </div>
+          {selectedCar.services.every(s => serviceStatus(s, selectedCar.currentMileage) === "green") && selectedCar.services.some(s => s.lastServiceDate) && (
+            <p className="text-center text-xs text-green-600 mt-4">All services up to date</p>
+          )}
 
           {/* Delete car */}
           <button
