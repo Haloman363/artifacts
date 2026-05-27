@@ -188,7 +188,7 @@ function PeptideDetail({ p, conc, days, onBack, onEdit, onDelete, onUpdateRemain
         <div className="mb-6">
           <div className="flex justify-between text-xs text-gray-500 mb-1">
             <span>Vial progress</span>
-            <span>{Math.round((p.currentAmountMg / p.vialSizeMg) * 100)}%</span>
+            <span>{p.vialSizeMg > 0 ? Math.round((p.currentAmountMg / p.vialSizeMg) * 100) : 0}%</span>
           </div>
           <div className="w-full bg-gray-800 rounded-full h-2">
             <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${Math.min(100, (p.currentAmountMg / p.vialSizeMg) * 100)}%` }} />
@@ -599,7 +599,7 @@ export default function Peptides() {
   // ── Peptide Detail ───────────────────────────────────────────────────────
   if (view === "peptide-detail") {
     const p = peptides.find(p => p.id === selectedId);
-    if (!p) { setView("peptides"); return null; }
+    if (!p) return null;
     const conc = calcConcentration(p.vialSizeMg, p.bacWaterMl);
     const days = calcDaysSupply(p.currentAmountMg, p.typicalDoseMcg);
 
