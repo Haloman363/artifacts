@@ -51,6 +51,12 @@ const APPS = [
     title: "Peptides",
     bg: "bg-blue-900",
   },
+  {
+    path: "/savings",
+    icon: "💰",
+    title: "Savings",
+    bg: "bg-yellow-900",
+  },
 ];
 
 export default function Hub() {
