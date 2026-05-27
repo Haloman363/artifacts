@@ -95,9 +95,60 @@ export default function CarMaintenance() {
   const selectedCar = cars.find(c => c.id === selectedCarId) ?? null;
   const selectedService = selectedCar?.services.find(s => s.id === selectedServiceId) ?? null;
 
-  return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <p className="text-center text-gray-500 pt-20">Car Maintenance — scaffold</p>
-    </div>
-  );
+  function navigateToCar(carId) {
+    setSelectedCarId(carId);
+    setView("car");
+  }
+
+  if (view === "hub") {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white px-4 pb-10 pt-6">
+        <div className="max-w-sm mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-xl font-bold">My Cars</h1>
+            <button
+              onClick={() => setView("add-car")}
+              className="flex items-center gap-1 bg-green-700 hover:bg-green-600 active:scale-95 transition-transform px-3 py-1.5 rounded-lg text-sm font-medium"
+            >
+              <Plus size={16} /> Add Car
+            </button>
+          </div>
+
+          {cars.length === 0 && (
+            <div className="text-center text-gray-500 mt-20">
+              <Car size={48} className="mx-auto mb-4 opacity-30" />
+              <p className="text-sm">No cars yet. Tap "Add Car" to get started.</p>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            {cars.map(car => {
+              const status = carStatus(car);
+              const StatusIcon = status === "red" ? XCircle : status === "yellow" ? AlertTriangle : CheckCircle;
+              const statusColor = status === "red" ? "text-red-400" : status === "yellow" ? "text-yellow-400" : "text-green-400";
+              const label = car.nickname || `${car.year} ${car.make} ${car.model}`.trim() || "Unnamed Car";
+              const sub = car.nickname ? `${car.year} ${car.make} ${car.model}`.trim() : "";
+              return (
+                <button
+                  key={car.id}
+                  onClick={() => navigateToCar(car.id)}
+                  className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 active:scale-98 transition-transform text-left w-full"
+                >
+                  <StatusIcon size={22} className={statusColor} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold truncate">{label}</p>
+                    {sub && <p className="text-xs text-gray-500 truncate">{sub}</p>}
+                    <p className="text-xs text-gray-600">{car.currentMileage.toLocaleString()} mi</p>
+                  </div>
+                  <ChevronRight size={18} className="text-gray-600 shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <div className="min-h-screen bg-gray-950 text-white px-4 pt-6 text-gray-500 text-sm text-center">Loading...</div>;
 }
