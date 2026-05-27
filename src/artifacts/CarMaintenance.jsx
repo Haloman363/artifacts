@@ -83,6 +83,92 @@ function carStatus(car) {
   return "green";
 }
 
+function CarForm({ initial, onSave, onCancel }) {
+  const [nickname, setNickname] = useState(initial?.nickname ?? "");
+  const [year, setYear]         = useState(initial?.year ?? "");
+  const [make, setMake]         = useState(initial?.make ?? "");
+  const [model, setModel]       = useState(initial?.model ?? "");
+  const [color, setColor]       = useState(initial?.color ?? "");
+  const [vin, setVin]           = useState(initial?.vin ?? "");
+  const [plate, setPlate]       = useState(initial?.plate ?? "");
+  const [mileage, setMileage]   = useState(initial?.currentMileage?.toString() ?? "");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSave({
+      nickname: nickname.trim(),
+      year: year.trim(),
+      make: make.trim(),
+      model: model.trim(),
+      color: color.trim(),
+      vin: vin.trim(),
+      plate: plate.trim(),
+      currentMileage: parseInt(mileage, 10) || 0,
+    });
+  }
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-600";
+  const labelCls = "block text-xs text-gray-400 mb-1";
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={onCancel}>
+      <div
+        className="bg-gray-900 border border-gray-800 rounded-t-2xl w-full max-w-sm px-5 py-6 max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-lg">{initial ? "Edit Car" : "Add Car"}</h2>
+          <button onClick={onCancel}><X size={20} className="text-gray-400" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Nickname</label>
+            <input className={inputCls} placeholder="e.g. Jaymes's Truck" value={nickname} onChange={e => setNickname(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Year</label>
+              <input className={inputCls} placeholder="2020" value={year} onChange={e => setYear(e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Make</label>
+              <input className={inputCls} placeholder="Toyota" value={make} onChange={e => setMake(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Model</label>
+            <input className={inputCls} placeholder="Tacoma" value={model} onChange={e => setModel(e.target.value)} />
+          </div>
+          <div>
+            <label className={labelCls}>Current Mileage</label>
+            <input className={inputCls} placeholder="45000" type="number" min="0" value={mileage} onChange={e => setMileage(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Color (optional)</label>
+              <input className={inputCls} placeholder="Silver" value={color} onChange={e => setColor(e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Plate (optional)</label>
+              <input className={inputCls} placeholder="ABC-1234" value={plate} onChange={e => setPlate(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>VIN (optional)</label>
+            <input className={inputCls} placeholder="1HGCM82633A..." value={vin} onChange={e => setVin(e.target.value)} />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-green-700 hover:bg-green-600 active:scale-95 transition-transform rounded-xl py-3 font-semibold text-sm mt-2"
+          >
+            {initial ? "Save Changes" : "Add Car"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function CarMaintenance() {
   const [cars, setCars] = useState(loadCars);
   const [view, setView] = useState("hub"); // "hub" | "car" | "add-car" | "edit-car" | "log-service"
@@ -97,6 +183,28 @@ export default function CarMaintenance() {
   function navigateToCar(carId) {
     setSelectedCarId(carId);
     setView("car");
+  }
+
+  function handleAddCar(fields) {
+    const newCar = {
+      id: makeId(),
+      ...fields,
+      services: makeDefaultServices(),
+    };
+    setCars(prev => [...prev, newCar]);
+    setSelectedCarId(newCar.id);
+    setView("car");
+  }
+
+  function handleEditCar(fields) {
+    setCars(prev => prev.map(c => c.id === selectedCarId ? { ...c, ...fields } : c));
+    setView("car");
+  }
+
+  function handleDeleteCar(carId) {
+    setCars(prev => prev.filter(c => c.id !== carId));
+    setSelectedCarId(null);
+    setView("hub");
   }
 
   if (view === "hub") {
@@ -147,6 +255,14 @@ export default function CarMaintenance() {
         </div>
       </div>
     );
+  }
+
+  if (view === "add-car") {
+    return <CarForm onSave={handleAddCar} onCancel={() => setView("hub")} />;
+  }
+
+  if (view === "edit-car" && selectedCar) {
+    return <CarForm initial={selectedCar} onSave={handleEditCar} onCancel={() => setView("car")} />;
   }
 
   return <div className="min-h-screen bg-gray-950 text-white px-4 pt-6 text-gray-500 text-sm text-center">Loading...</div>;
