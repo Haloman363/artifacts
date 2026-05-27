@@ -63,10 +63,10 @@ function serviceStatus(service, currentMileage) {
   if (lastServiceDate != null) {
     const last = new Date(lastServiceDate);
     const now = new Date();
-    const monthsDone = (now.getFullYear() - last.getFullYear()) * 12 + (now.getMonth() - last.getMonth());
-    const monthsLeft = intervalMonths - monthsDone;
-    if (monthsLeft <= 0) dateStatus = "red";
-    else if (monthsLeft <= 1) dateStatus = "yellow";
+    const msLeft = last.getTime() + intervalMonths * 30.44 * 86400000 - now.getTime();
+    const daysLeft = msLeft / 86400000;
+    if (daysLeft <= 0) dateStatus = "red";
+    else if (daysLeft <= 30) dateStatus = "yellow";
   }
 
   // Worst of the two
@@ -78,6 +78,7 @@ function serviceStatus(service, currentMileage) {
 // Returns worst status across all services for a car
 function carStatus(car) {
   const statuses = car.services.map(s => serviceStatus(s, car.currentMileage));
+  if (statuses.length === 0) return "yellow";
   if (statuses.includes("red")) return "red";
   if (statuses.includes("yellow")) return "yellow";
   return "green";
