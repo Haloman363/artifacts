@@ -78,7 +78,6 @@ function serviceStatus(service, currentMileage) {
 // Returns worst status across all services for a car
 function carStatus(car) {
   const statuses = car.services.map(s => serviceStatus(s, car.currentMileage));
-  if (statuses.length === 0) return "yellow";
   if (statuses.includes("red")) return "red";
   if (statuses.includes("yellow")) return "yellow";
   return "green";
@@ -132,7 +131,7 @@ export default function CarMaintenance() {
                 <button
                   key={car.id}
                   onClick={() => navigateToCar(car.id)}
-                  className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 active:scale-98 transition-transform text-left w-full"
+                  className="flex items-center gap-3 bg-gray-900 border border-gray-800 rounded-xl px-4 py-3 active:scale-95 transition-transform text-left w-full"
                 >
                   <StatusIcon size={22} className={statusColor} />
                   <div className="flex-1 min-w-0">
