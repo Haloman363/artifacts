@@ -304,6 +304,91 @@ function SupplementForm({ initial, onSave, onCancel }) {
   );
 }
 
+function ShotForm({ peptides, onSave, onCancel }) {
+  const today = new Date().toISOString().split("T")[0];
+  const now = new Date().toTimeString().slice(0, 5);
+  const [peptideId, setPeptideId] = useState(peptides[0]?.id ?? "");
+  const [date, setDate]           = useState(today);
+  const [time, setTime]           = useState(now);
+  const [amountMl, setAmountMl]   = useState("");
+  const [site, setSite]           = useState(INJECTION_SITES[0]);
+  const [weightLbs, setWeightLbs] = useState("");
+  const [notes, setNotes]         = useState("");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const parsed = parseFloat(weightLbs);
+    onSave({
+      peptideId,
+      date,
+      time,
+      amountMl: parseFloat(amountMl) || 0,
+      site,
+      weightLbs: !isNaN(parsed) && weightLbs !== "" ? parsed : null,
+      notes: notes.trim(),
+    });
+  }
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-600";
+  const labelCls = "block text-xs text-gray-400 mb-1";
+  const selCls = inputCls + " appearance-none";
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={onCancel}>
+      <div
+        className="bg-gray-900 border border-gray-800 rounded-t-2xl w-full max-w-sm px-5 py-6 max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-lg">Log Shot</h2>
+          <button onClick={onCancel}><X size={20} className="text-gray-400" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Peptide</label>
+            <select className={selCls} value={peptideId} onChange={e => setPeptideId(e.target.value)}>
+              {peptides.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Date</label>
+              <input className={inputCls} type="date" value={date} onChange={e => setDate(e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Time</label>
+              <input className={inputCls} type="time" value={time} onChange={e => setTime(e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Amount (mL)</label>
+              <input className={inputCls} type="number" min="0" step="0.01" placeholder="0.10" value={amountMl} onChange={e => setAmountMl(e.target.value)} required />
+            </div>
+            <div>
+              <label className={labelCls}>Weight (lbs, optional)</label>
+              <input className={inputCls} type="number" min="0" step="0.1" placeholder="185" value={weightLbs} onChange={e => setWeightLbs(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Injection Site</label>
+            <select className={selCls} value={site} onChange={e => setSite(e.target.value)}>
+              {INJECTION_SITES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Notes (optional)</label>
+            <input className={inputCls} placeholder="Reactions, observations..." value={notes} onChange={e => setNotes(e.target.value)} />
+          </div>
+          <button type="submit" className="w-full bg-purple-700 hover:bg-purple-600 active:scale-95 transition-transform rounded-xl py-3 font-semibold text-sm mt-2">
+            Save Shot
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function Peptides() {
   const [data, setData] = useState(loadData);
   const [view, setView] = useState("hub");
@@ -535,6 +620,87 @@ export default function Peptides() {
                 {s.notes && <p className="text-xs text-gray-600 mt-1 truncate">{s.notes}</p>}
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Shot handlers ────────────────────────────────────────────────────────
+  function handleAddShot(fields) {
+    const peptide = peptides.find(p => p.id === fields.peptideId);
+    if (peptide) {
+      const conc = calcConcentration(peptide.vialSizeMg, peptide.bacWaterMl);
+      if (conc) {
+        const mgUsed = fields.amountMl * conc;
+        updateData({
+          shots: [{ id: makeId(), ...fields }, ...shots],
+          peptides: peptides.map(p =>
+            p.id === fields.peptideId
+              ? { ...p, currentAmountMg: Math.max(0, p.currentAmountMg - mgUsed) }
+              : p
+          ),
+        });
+        return;
+      }
+    }
+    updateData({ shots: [{ id: makeId(), ...fields }, ...shots] });
+  }
+
+  function handleDeleteShot(id) {
+    updateData({ shots: shots.filter(s => s.id !== id) });
+  }
+
+  if (view === "add-shot") {
+    if (peptides.length === 0) {
+      return (
+        <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center gap-4 px-4">
+          <p className="text-gray-400 text-sm text-center">Add a peptide first before logging a shot.</p>
+          <button onClick={() => setView("peptides")} className="bg-blue-700 px-4 py-2 rounded-xl text-sm font-medium active:scale-95 transition-transform">Go to Peptides</button>
+        </div>
+      );
+    }
+    return <ShotForm peptides={peptides} onSave={fields => { handleAddShot(fields); setView("shots"); }} onCancel={() => setView("shots")} />;
+  }
+
+  // ── Shots List ───────────────────────────────────────────────────────────
+  if (view === "shots") {
+    const sorted = shots.slice().sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+    return (
+      <div className="min-h-screen bg-gray-950 text-white px-4 pb-10 pt-6">
+        <div className="max-w-sm mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={() => setView("hub")} className="text-gray-400 text-sm active:opacity-60 flex items-center gap-1"><ArrowLeft size={16} /> Back</button>
+            <h1 className="text-lg font-bold">Shot Log</h1>
+            <button onClick={() => setView("add-shot")} className="flex items-center gap-1 bg-purple-700 hover:bg-purple-600 active:scale-95 transition-transform px-3 py-1.5 rounded-lg text-sm font-medium">
+              <Plus size={14} /> Add
+            </button>
+          </div>
+
+          {sorted.length === 0 && (
+            <div className="text-center text-gray-500 mt-20">
+              <ClipboardList size={48} className="mx-auto mb-4 opacity-30" />
+              <p className="text-sm">No shots logged yet.</p>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            {sorted.map(sh => {
+              const peptide = peptides.find(p => p.id === sh.peptideId);
+              return (
+                <div key={sh.id} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="font-semibold text-sm">{peptide?.name ?? "Unknown"}</p>
+                      <p className="text-xs text-gray-500">{new Date(sh.date).toLocaleDateString()} {sh.time} · {sh.amountMl} mL · {sh.site}</p>
+                      {sh.weightLbs && <p className="text-xs text-gray-600">{sh.weightLbs} lbs at time of shot</p>}
+                      {sh.notes && <p className="text-xs text-gray-600 mt-0.5">{sh.notes}</p>}
+                    </div>
+                    <button onClick={() => { if (confirm("Delete this shot?")) handleDeleteShot(sh.id); }} className="text-red-800 active:opacity-60 ml-2 shrink-0"><X size={14} /></button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
