@@ -232,6 +232,78 @@ function PeptideDetail({ p, conc, days, onBack, onEdit, onDelete, onUpdateRemain
   );
 }
 
+function SupplementForm({ initial, onSave, onCancel }) {
+  const [name, setName]           = useState(initial?.name ?? "");
+  const [dose, setDose]           = useState(initial?.dose ?? "");
+  const [unit, setUnit]           = useState(initial?.unit ?? "mg");
+  const [frequency, setFrequency] = useState(initial?.frequency ?? "Daily");
+  const [timing, setTiming]       = useState(initial?.timing ?? "Morning");
+  const [notes, setNotes]         = useState(initial?.notes ?? "");
+  const [startDate, setStartDate] = useState(initial?.startDate ?? new Date().toISOString().split("T")[0]);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onSave({ name: name.trim(), dose: dose.trim(), unit: unit.trim(), frequency: frequency.trim(), timing, notes: notes.trim(), startDate });
+  }
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-green-600";
+  const labelCls = "block text-xs text-gray-400 mb-1";
+  const selCls = inputCls + " appearance-none";
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={onCancel}>
+      <div
+        className="bg-gray-900 border border-gray-800 rounded-t-2xl w-full max-w-sm px-5 py-6 max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-lg">{initial ? "Edit Supplement" : "Add Supplement"}</h2>
+          <button onClick={onCancel}><X size={20} className="text-gray-400" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Name</label>
+            <input className={inputCls} placeholder="e.g. Vitamin D" value={name} onChange={e => setName(e.target.value)} required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Dose</label>
+              <input className={inputCls} placeholder="5000" value={dose} onChange={e => setDose(e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Unit</label>
+              <input className={inputCls} placeholder="IU / mg / g" value={unit} onChange={e => setUnit(e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Frequency</label>
+              <input className={inputCls} placeholder="Daily" value={frequency} onChange={e => setFrequency(e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Timing</label>
+              <select className={selCls} value={timing} onChange={e => setTiming(e.target.value)}>
+                {TIMING_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Start Date</label>
+            <input className={inputCls} type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+          </div>
+          <div>
+            <label className={labelCls}>Notes (optional)</label>
+            <input className={inputCls} placeholder="Brand, link, etc." value={notes} onChange={e => setNotes(e.target.value)} />
+          </div>
+          <button type="submit" className="w-full bg-green-700 hover:bg-green-600 active:scale-95 transition-transform rounded-xl py-3 font-semibold text-sm mt-2">
+            {initial ? "Save Changes" : "Add Supplement"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function Peptides() {
   const [data, setData] = useState(loadData);
   const [view, setView] = useState("hub");
@@ -395,6 +467,77 @@ export default function Peptides() {
         onUpdateRemaining={val => updateData({ peptides: peptides.map(pp => pp.id === p.id ? { ...pp, currentAmountMg: val } : pp) })}
         calcDoseToMlFn={calcDoseToMl}
       />
+    );
+  }
+
+  // ── Supplement handlers ──────────────────────────────────────────────────
+  function handleAddSupplement(fields) {
+    updateData({ supplements: [...supplements, { id: makeId(), ...fields }] });
+    setView("supplements");
+  }
+
+  function handleEditSupplement(fields) {
+    updateData({ supplements: supplements.map(s => s.id === selectedId ? { ...s, ...fields } : s) });
+    setView("supplements");
+  }
+
+  function handleDeleteSupplement(id) {
+    updateData({ supplements: supplements.filter(s => s.id !== id) });
+    setSelectedId(null);
+    setView("supplements");
+  }
+
+  if (view === "add-supplement") {
+    return <SupplementForm onSave={handleAddSupplement} onCancel={() => setView("supplements")} />;
+  }
+
+  if (view === "edit-supplement") {
+    const s = supplements.find(s => s.id === selectedId);
+    if (s) return <SupplementForm initial={s} onSave={handleEditSupplement} onCancel={() => setView("supplements")} />;
+  }
+
+  // ── Supplements List ─────────────────────────────────────────────────────
+  if (view === "supplements") {
+    const timingColor = { Morning: "bg-yellow-900 text-yellow-300", Evening: "bg-indigo-900 text-indigo-300", "With food": "bg-green-900 text-green-300", Other: "bg-gray-800 text-gray-400" };
+
+    return (
+      <div className="min-h-screen bg-gray-950 text-white px-4 pb-10 pt-6">
+        <div className="max-w-sm mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={() => setView("hub")} className="text-gray-400 text-sm active:opacity-60 flex items-center gap-1"><ArrowLeft size={16} /> Back</button>
+            <h1 className="text-lg font-bold">Supplements</h1>
+            <button onClick={() => setView("add-supplement")} className="flex items-center gap-1 bg-green-700 hover:bg-green-600 active:scale-95 transition-transform px-3 py-1.5 rounded-lg text-sm font-medium">
+              <Plus size={14} /> Add
+            </button>
+          </div>
+
+          {supplements.length === 0 && (
+            <div className="text-center text-gray-500 mt-20">
+              <Pill size={48} className="mx-auto mb-4 opacity-30" />
+              <p className="text-sm">No supplements yet.</p>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            {supplements.map(s => (
+              <div key={s.id} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold truncate">{s.name}</p>
+                    <p className="text-xs text-gray-500">{s.dose} {s.unit} · {s.frequency}</p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-2 shrink-0">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${timingColor[s.timing] ?? timingColor.Other}`}>{s.timing}</span>
+                    <button onClick={() => { setSelectedId(s.id); setView("edit-supplement"); }} className="text-gray-600 active:opacity-60"><Edit2 size={14} /></button>
+                    <button onClick={() => { if (confirm(`Delete ${s.name}?`)) handleDeleteSupplement(s.id); }} className="text-red-800 active:opacity-60"><X size={14} /></button>
+                  </div>
+                </div>
+                {s.notes && <p className="text-xs text-gray-600 mt-1 truncate">{s.notes}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     );
   }
 
