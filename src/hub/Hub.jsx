@@ -45,6 +45,12 @@ const APPS = [
     title: "Car Maintenance",
     bg: "bg-green-900",
   },
+  {
+    path: "/peptides",
+    icon: "💉",
+    title: "Peptides",
+    bg: "bg-blue-900",
+  },
 ];
 
 export default function Hub() {

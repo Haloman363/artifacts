@@ -7,6 +7,7 @@ import SubnetCalc from "./artifacts/SubnetCalc.tsx";
 import Pomodoro from "./artifacts/Pomodoro.jsx";
 import ClaudeTamagotchi from "./artifacts/ClaudeTamagotchi.jsx";
 import CarMaintenance from "./artifacts/CarMaintenance.jsx";
+import Peptides from "./artifacts/Peptides.jsx";
 import BackButton from "./artifacts/BackButton.jsx";
 
 function ArtifactLayout() {
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/pomodoro" element={<Pomodoro />} />
         <Route path="/tamagotchi" element={<ClaudeTamagotchi />} />
         <Route path="/car-maintenance" element={<CarMaintenance />} />
+        <Route path="/peptides" element={<Peptides />} />
       </Route>
     </Routes>
   );
