@@ -150,9 +150,10 @@ function LogServiceForm({ service, car, onSave, onCancel }) {
 
   function handleSubmit(e) {
     e.preventDefault();
+    const parsedMileage = parseInt(mileage, 10);
     onSave({
       lastServiceDate: date || null,
-      lastServiceMileage: parseInt(mileage, 10) || null,
+      lastServiceMileage: !isNaN(parsedMileage) ? parsedMileage : null,
     });
   }
 
