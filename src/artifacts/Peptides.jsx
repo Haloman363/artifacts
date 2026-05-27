@@ -389,6 +389,66 @@ function ShotForm({ peptides, onSave, onCancel }) {
   );
 }
 
+function MetricForm({ onSave, onCancel }) {
+  const today = new Date().toISOString().split("T")[0];
+  const [date, setDate]           = useState(today);
+  const [weightLbs, setWeightLbs] = useState("");
+  const [bodyFatPct, setBodyFat]  = useState("");
+  const [notes, setNotes]         = useState("");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const w = parseFloat(weightLbs);
+    const bf = parseFloat(bodyFatPct);
+    onSave({
+      date,
+      weightLbs: !isNaN(w) && weightLbs !== "" ? w : null,
+      bodyFatPct: !isNaN(bf) && bodyFatPct !== "" ? bf : null,
+      notes: notes.trim(),
+    });
+  }
+
+  const inputCls = "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-600";
+  const labelCls = "block text-xs text-gray-400 mb-1";
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={onCancel}>
+      <div
+        className="bg-gray-900 border border-gray-800 rounded-t-2xl w-full max-w-sm px-5 py-6"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-bold text-lg">Log Metrics</h2>
+          <button onClick={onCancel}><X size={20} className="text-gray-400" /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className={labelCls}>Date</label>
+            <input className={inputCls} type="date" value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Weight (lbs)</label>
+              <input className={inputCls} type="number" min="0" step="0.1" placeholder="185" value={weightLbs} onChange={e => setWeightLbs(e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Body Fat %</label>
+              <input className={inputCls} type="number" min="0" max="100" step="0.1" placeholder="18" value={bodyFatPct} onChange={e => setBodyFat(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Notes (optional)</label>
+            <input className={inputCls} placeholder="How you're feeling, etc." value={notes} onChange={e => setNotes(e.target.value)} />
+          </div>
+          <button type="submit" className="w-full bg-orange-700 hover:bg-orange-600 active:scale-95 transition-transform rounded-xl py-3 font-semibold text-sm mt-2">
+            Save Entry
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function Peptides() {
   const [data, setData] = useState(loadData);
   const [view, setView] = useState("hub");
@@ -701,6 +761,81 @@ export default function Peptides() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Metrics handlers ─────────────────────────────────────────────────────
+  function handleAddMetric(fields) {
+    updateData({ metrics: [{ id: makeId(), ...fields }, ...metrics] });
+    setView("metrics");
+  }
+
+  function handleDeleteMetric(id) {
+    updateData({ metrics: metrics.filter(m => m.id !== id) });
+  }
+
+  if (view === "add-metric") {
+    return <MetricForm onSave={handleAddMetric} onCancel={() => setView("metrics")} />;
+  }
+
+  // ── Metrics List ─────────────────────────────────────────────────────────
+  if (view === "metrics") {
+    const sorted = metrics.slice().sort((a, b) => b.date.localeCompare(a.date));
+    const latest = sorted[0];
+    return (
+      <div className="min-h-screen bg-gray-950 text-white px-4 pb-10 pt-6">
+        <div className="max-w-sm mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <button onClick={() => setView("hub")} className="text-gray-400 text-sm active:opacity-60 flex items-center gap-1"><ArrowLeft size={16} /> Back</button>
+            <h1 className="text-lg font-bold">Metrics</h1>
+            <button onClick={() => setView("add-metric")} className="flex items-center gap-1 bg-orange-700 hover:bg-orange-600 active:scale-95 transition-transform px-3 py-1.5 rounded-lg text-sm font-medium">
+              <Plus size={14} /> Add
+            </button>
+          </div>
+
+          {latest && (
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {latest.weightLbs && (
+                <div className="bg-orange-950 border border-orange-900 rounded-xl px-3 py-3 text-center">
+                  <p className="text-xs text-orange-400 mb-0.5">Current Weight</p>
+                  <p className="text-xl font-bold">{latest.weightLbs} <span className="text-sm font-normal text-gray-400">lbs</span></p>
+                </div>
+              )}
+              {latest.bodyFatPct && (
+                <div className="bg-orange-950 border border-orange-900 rounded-xl px-3 py-3 text-center">
+                  <p className="text-xs text-orange-400 mb-0.5">Body Fat</p>
+                  <p className="text-xl font-bold">{latest.bodyFatPct}<span className="text-sm font-normal text-gray-400">%</span></p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {sorted.length === 0 && (
+            <div className="text-center text-gray-500 mt-20">
+              <BarChart2 size={48} className="mx-auto mb-4 opacity-30" />
+              <p className="text-sm">No metrics logged yet.</p>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            {sorted.map(m => (
+              <div key={m.id} className="bg-gray-900 border border-gray-800 rounded-xl px-4 py-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">{new Date(m.date).toLocaleDateString()}</p>
+                    <div className="flex gap-4">
+                      {m.weightLbs && <p className="text-sm font-semibold">{m.weightLbs} lbs</p>}
+                      {m.bodyFatPct && <p className="text-sm font-semibold">{m.bodyFatPct}% BF</p>}
+                    </div>
+                    {m.notes && <p className="text-xs text-gray-600 mt-0.5">{m.notes}</p>}
+                  </div>
+                  <button onClick={() => { if (confirm("Delete this entry?")) handleDeleteMetric(m.id); }} className="text-red-800 active:opacity-60 ml-2 shrink-0"><X size={14} /></button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
