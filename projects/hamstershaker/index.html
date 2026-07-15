@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HAMSTERSHAKER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Crimson+Pro:ital,wght@0,500;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#111;}
+  body{font-family:'Oswald',sans-serif;display:flex;justify-content:center;}
+  .viewport{
+    position:relative;width:100%;max-width:460px;height:100dvh;
+    overflow:hidden;background:#26241A;
+    touch-action:none;user-select:none;cursor:grab;
+  }
+  .viewport:active{cursor:grabbing;}
+  .scene-svg{
+    position:absolute;inset:0;width:100%;height:100%;
+    will-change:transform;
+  }
+  .scene-svg svg{width:100%;height:100%;}
+
+  /* ---- HUD ---- */
+  .hud-top{
+    position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);
+    left:50%;transform:translateX(-50%);
+    width:min(78%,300px);text-align:center;z-index:10;pointer-events:none;
+  }
+  .hud-title{
+    font-weight:700;font-size:15px;letter-spacing:0.22em;color:#EFE9D6;
+    text-shadow:0 2px 4px rgba(0,0,0,0.8);
+    margin:0 0 6px;
+  }
+  .hud-title .tm{font-size:8px;vertical-align:super;letter-spacing:0;}
+  .meter-frame{
+    height:18px;border:2px solid #EFE9D6;background:rgba(10,10,8,0.55);
+    box-shadow:0 2px 8px rgba(0,0,0,0.6), inset 0 0 6px rgba(0,0,0,0.6);
+    padding:2px;
+  }
+  .meter-fill{
+    height:100%;width:0%;
+    background:linear-gradient(180deg,#F5EFCF,#D8CD9A);
+    transition:width 0.18s ease-out;
+  }
+  .hud-sub{
+    margin:5px 0 0;font-weight:500;font-size:10px;letter-spacing:0.3em;
+    color:#D8D2BE;text-shadow:0 1px 3px rgba(0,0,0,0.8);text-transform:uppercase;
+  }
+
+  .crosshair{
+    position:absolute;top:46%;left:50%;transform:translate(-50%,-50%);
+    width:5px;height:5px;border-radius:50%;
+    background:rgba(239,233,214,0.85);
+    box-shadow:0 0 4px rgba(0,0,0,0.8);
+    z-index:9;pointer-events:none;
+  }
+
+  .subtitle{
+    position:absolute;bottom:20%;left:50%;transform:translateX(-50%);
+    width:86%;text-align:center;z-index:10;pointer-events:none;
+    font-family:'Crimson Pro',serif;font-style:italic;font-weight:600;
+    font-size:16.5px;line-height:1.4;color:#F0EADA;
+    text-shadow:0 2px 5px rgba(0,0,0,0.95), 0 0 14px rgba(0,0,0,0.7);
+    opacity:0;transition:opacity 0.45s ease;
+  }
+  .subtitle.show{opacity:1;}
+
+  .hud-bottom{
+    position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    left:0;right:0;z-index:10;
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+  }
+  .stats-row{
+    display:flex;gap:22px;
+    font-weight:600;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;
+    color:#CBC5B0;text-shadow:0 1px 3px rgba(0,0,0,0.85);
+  }
+  .stats-row b{color:#F5EFCF;font-weight:700;}
+  .tiny-row{display:flex;gap:14px;align-items:center;}
+  .tiny-row button{
+    background:rgba(10,10,8,0.5);border:1.5px solid rgba(239,233,214,0.5);color:#E5DFC9;
+    font-family:'Oswald',sans-serif;font-weight:500;font-size:9.5px;letter-spacing:0.14em;
+    text-transform:uppercase;padding:5px 12px;cursor:pointer;
+  }
+  .enable-btn{
+    background:rgba(10,10,8,0.6) !important;
+    border:2px solid #EFE9D6 !important;
+    font-size:11px !important;padding:8px 18px !important;color:#F5EFCF !important;
+  }
+
+  .flash{
+    position:absolute;inset:0;background:#F5EFCF;opacity:0;pointer-events:none;z-index:20;
+  }
+
+
+  .ash{
+    position:absolute;width:3px;height:3px;border-radius:50%;
+    background:#B9B2A2;opacity:0;pointer-events:none;z-index:8;
+  }
+  .subtitle.dread{
+    font-family:'Oswald',sans-serif;font-style:normal;font-weight:600;
+    letter-spacing:0.3em;text-transform:uppercase;color:#D8B0B0;
+  }
+  .hud-title.glitch{color:#C97878;}
+
+  @media (prefers-reduced-motion: reduce){
+    .scene-svg{will-change:auto;}
+  }
+</style>
+</head>
+<body>
+<div class="viewport" id="viewport">
+  <div class="scene-svg" id="sceneCam">
+    <svg viewBox="0 0 390 700" preserveAspectRatio="xMidYMid slice" id="sceneSvg">
+
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7E838F"/>
+      <stop offset="0.7" stop-color="#A8A296"/>
+      <stop offset="1" stop-color="#C4BBA4"/>
+    </linearGradient>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#575030"/>
+      <stop offset="0.4" stop-color="#453F26"/>
+      <stop offset="1" stop-color="#262417"/>
+    </linearGradient>
+    <linearGradient id="fieldG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#575030"/>
+      <stop offset="0.45" stop-color="#443E25"/>
+      <stop offset="1" stop-color="#26241A"/>
+    </linearGradient>
+    <radialGradient id="furBody" cx="0.4" cy="0.35" r="0.9">
+      <stop offset="0" stop-color="#F0EADA"/>
+      <stop offset="0.6" stop-color="#DED6C2"/>
+      <stop offset="1" stop-color="#AFA48D"/>
+    </radialGradient>
+    <radialGradient id="furHead" cx="0.42" cy="0.35" r="0.85">
+      <stop offset="0" stop-color="#F4EEDE"/>
+      <stop offset="0.65" stop-color="#E2DAC6"/>
+      <stop offset="1" stop-color="#B5AA93"/>
+    </radialGradient>
+    <linearGradient id="skinArm" x1="0" y1="0" x2="1" y2="0.3">
+      <stop offset="0" stop-color="#D3A47D"/>
+      <stop offset="0.55" stop-color="#B98863"/>
+      <stop offset="1" stop-color="#8F6547"/>
+    </linearGradient>
+    <linearGradient id="skinFinger" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D8AA82"/>
+      <stop offset="0.6" stop-color="#BE8D66"/>
+      <stop offset="1" stop-color="#93684A"/>
+    </linearGradient>
+    <radialGradient id="vig" cx="0.5" cy="0.46" r="0.75">
+      <stop offset="0" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="0.62" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.62"/>
+    </radialGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#EFE9D3" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#EFE9D3" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.55"/></feComponentTransfer>
+      <feComposite operator="over" in2="SourceGraphic"/>
+    </filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="1.1"/></filter>
+  </defs>
+
+  <!-- SKY -->
+  <rect x="0" y="0" width="390" height="330" fill="url(#sky)"/>
+  <circle cx="195" cy="240" r="120" fill="url(#sun)"/>
+
+  <!-- TREELINE -->
+  <path d="M0,318 L0,300 Q20,288 38,298 L52,290 Q70,280 88,292 L110,284 Q128,276 150,290 L172,282 Q195,272 216,286 L240,280 Q262,272 282,286 L305,280 Q330,272 350,288 L368,282 Q382,278 390,286 L390,318 Z" fill="#20241C" filter="url(#soft)"/>
+  <path d="M0,322 L0,308 Q40,298 90,306 Q150,296 210,306 Q280,296 340,306 Q370,300 390,306 L390,322 Z" fill="#171A14"/>
+
+  
+  <!-- THE HOUSE (appears with corruption) -->
+  <g id="houseGroup" opacity="0">
+    <path d="M74,318 L74,296 L96,282 L118,296 L118,318 Z" fill="#0E0F0C"/>
+    <rect x="88" y="302" width="8" height="16" fill="#0E0F0C"/>
+    <rect x="99" y="298" width="9" height="8" fill="#050505"/>
+    <rect x="100" y="299" width="7" height="6" fill="#7E1A1A" id="houseWindow" opacity="0"/>
+    <rect x="108" y="276" width="5" height="16" fill="#0E0F0C"/>
+  </g>
+
+  <!-- FIELD -->
+  <rect x="0" y="316" width="390" height="384" fill="url(#fieldG)"/>
+  <!-- field texture rows -->
+  <g stroke="#6A6238" stroke-width="1" opacity="0.5">
+    <path d="M10,340 l6,-10 M40,338 l5,-9 M75,342 l6,-10 M120,337 l5,-9 M160,341 l6,-10 M205,338 l5,-9 M250,342 l6,-10 M295,338 l5,-9 M340,341 l6,-10 M375,338 l5,-9"/>
+  </g>
+  <g stroke="#6F6435" stroke-width="1.6" opacity="0.55">
+    <path d="M15,395 l8,-18 M55,390 l7,-16 M95,398 l8,-18 M140,392 l7,-16 M250,396 l8,-18 M300,390 l7,-16 M348,397 l8,-18"/>
+  </g>
+  <g stroke="#77693A" stroke-width="2.2" opacity="0.6">
+    <path d="M20,480 l10,-30 M60,472 l9,-26 M105,485 l10,-30 M330,480 l10,-30 M365,470 l9,-26"/>
+    <path d="M28,478 l2,-28 M68,470 l1,-24 M113,483 l2,-28 M338,478 l2,-28"/>
+  </g>
+  <g stroke="#847440" stroke-width="3" opacity="0.65">
+    <path d="M12,640 l16,-52 M48,660 l14,-48 M340,650 l16,-52 M372,668 l14,-48"/>
+  </g>
+  <g stroke="#8A7A45" stroke-width="3" opacity="0.6">
+    <path d="M10,655 l18,-55 M45,678 l15,-50 M338,662 l18,-55 M370,685 l15,-50 M25,695 l12,-45 M355,698 l12,-45"/>
+  </g>
+
+  <!-- ============ ARM (rigid group) ============ -->
+  <g id="armGroup">
+    <!-- forearm from bottom-right -->
+    <path d="M262,700 L390,700 L390,640 L330,540 Q312,505 285,492 Q262,483 245,498 Q228,516 232,560 Q238,630 252,700 Z" fill="url(#skinArm)"/>
+    <path d="M330,540 Q312,505 285,492 Q262,483 245,498 Q240,505 237,514 Q262,498 292,514 Q315,526 330,548 Z" fill="#E0B58A" opacity="0.5"/>
+    <!-- sleeve cuff -->
+    <path d="M268,700 L390,700 L390,652 L346,586 Q300,606 262,648 Q264,676 268,700 Z" fill="#2A2731"/>
+    <path d="M262,648 Q300,606 346,586 L352,596 Q306,616 270,656 Z" fill="#3A3646"/>
+    <!-- palm behind hamster -->
+    <ellipse cx="232" cy="470" rx="46" ry="40" fill="url(#skinArm)"/>
+
+    <!-- ============ HAMSTER (lag group nested) ============ -->
+    <g id="hamsterLag">
+      <!-- ears -->
+      <g>
+        <circle cx="142" cy="290" r="24" fill="url(#furHead)" stroke="#8A8070" stroke-width="1.5"/>
+        <circle cx="142" cy="291" r="13" fill="#D5A2A8"/>
+        <circle cx="230" cy="290" r="24" fill="url(#furHead)" stroke="#8A8070" stroke-width="1.5"/>
+        <circle cx="230" cy="291" r="13" fill="#D5A2A8"/>
+      </g>
+      <!-- body hanging -->
+      <path d="M120,352 Q112,430 132,478 Q152,516 186,516 Q220,516 240,478 Q260,430 252,352 Z" fill="url(#furBody)"/>
+      <!-- belly -->
+      <ellipse cx="186" cy="452" rx="42" ry="52" fill="#F5F0E0" opacity="0.85"/>
+      <!-- head -->
+      <ellipse cx="186" cy="330" rx="70" ry="62" fill="url(#furHead)"/>
+      <!-- head fur tufts -->
+      <path d="M150,275 l-6,-12 M170,268 l-3,-13 M200,268 l3,-13 M222,276 l6,-12" stroke="#CFC6B0" stroke-width="3" stroke-linecap="round"/>
+      <!-- cheeks subtle -->
+      <ellipse cx="136" cy="352" rx="20" ry="15" fill="#E8C8BC" opacity="0.45"/>
+      <ellipse cx="236" cy="352" rx="20" ry="15" fill="#E8C8BC" opacity="0.45"/>
+
+      <!-- EYES: big glossy black (idle) -->
+      <g id="faceIdle">
+        <ellipse cx="158" cy="326" rx="14" ry="16" fill="#15121A"/>
+        <ellipse cx="214" cy="326" rx="14" ry="16" fill="#15121A"/>
+        <circle cx="163" cy="320" r="4.5" fill="#FFFFFF" opacity="0.9"/>
+        <circle cx="219" cy="320" r="4.5" fill="#FFFFFF" opacity="0.9"/>
+        <circle cx="155" cy="331" r="2" fill="#FFFFFF" opacity="0.4"/>
+        <circle cx="211" cy="331" r="2" fill="#FFFFFF" opacity="0.4"/>
+        <path d="M176,362 Q186,368 196,362" stroke="#5B5142" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <g id="faceAlarmed" opacity="0">
+        <ellipse cx="158" cy="326" rx="17" ry="19" fill="#FFFFFF"/>
+        <ellipse cx="214" cy="326" rx="17" ry="19" fill="#FFFFFF"/>
+        <ellipse cx="158" cy="328" rx="9" ry="11" fill="#15121A"/>
+        <ellipse cx="214" cy="328" rx="9" ry="11" fill="#15121A"/>
+        <circle cx="161" cy="323" r="3" fill="#FFFFFF"/>
+        <circle cx="217" cy="323" r="3" fill="#FFFFFF"/>
+        <ellipse cx="186" cy="368" rx="9" ry="12" fill="#3E2C30"/>
+      </g>
+      <g id="faceScream" opacity="0">
+        <path d="M142,318 L174,330 M142,334 L174,322" stroke="#15121A" stroke-width="6" stroke-linecap="round"/>
+        <path d="M230,318 L198,330 M230,334 L198,322" stroke="#15121A" stroke-width="6" stroke-linecap="round"/>
+        <path d="M156,360 Q186,352 216,360 Q214,404 186,406 Q158,404 156,360 Z" fill="#4A2830" stroke="#2E1A20" stroke-width="2"/>
+        <path d="M166,392 Q186,404 206,392 Q202,406 186,406 Q170,406 166,392 Z" fill="#D97B8A"/>
+        <path d="M160,362 Q186,356 212,362 L210,370 Q186,364 162,370 Z" fill="#F2ECDC"/>
+      </g>
+
+      <g id="eyesCorrupt" opacity="0">
+        <ellipse cx="158" cy="326" rx="15" ry="17" fill="#0A080C"/>
+        <ellipse cx="214" cy="326" rx="15" ry="17" fill="#0A080C"/>
+        <ellipse cx="158" cy="326" rx="15" ry="17" fill="none" stroke="#8E1F1F" stroke-width="1.6" opacity="0.8"/>
+        <ellipse cx="214" cy="326" rx="15" ry="17" fill="none" stroke="#8E1F1F" stroke-width="1.6" opacity="0.8"/>
+        <circle cx="158" cy="326" r="2.4" fill="#B23030" opacity="0.9"/>
+        <circle cx="214" cy="326" r="2.4" fill="#B23030" opacity="0.9"/>
+      </g>
+
+      <!-- nose -->
+      <path d="M180,348 Q186,344 192,348 Q189,356 186,356 Q183,356 180,348 Z" fill="#C98F96"/>
+      <!-- whiskers -->
+      <g stroke="#B7AD97" stroke-width="1.5" stroke-linecap="round" opacity="0.9">
+        <path d="M150,348 L104,340"/><path d="M150,356 L100,356"/><path d="M150,364 L106,372"/>
+        <path d="M222,348 L268,340"/><path d="M222,356 L272,356"/><path d="M222,364 L266,372"/>
+      </g>
+
+      <!-- limp arms -->
+      <path d="M134,420 Q122,442 130,458 Q136,466 144,460 Q150,448 146,428 Z" fill="url(#furBody)"/>
+      <path d="M238,420 Q250,442 242,458 Q236,466 228,460 Q222,448 226,428 Z" fill="url(#furBody)"/>
+      <ellipse cx="136" cy="458" rx="8" ry="6" fill="#D9A8AE"/>
+      <ellipse cx="236" cy="458" rx="8" ry="6" fill="#D9A8AE"/>
+      <!-- dangling feet -->
+      <path d="M164,510 Q160,532 166,540 Q174,546 178,536 Q180,522 176,510 Z" fill="url(#furBody)"/>
+      <path d="M208,510 Q212,532 206,540 Q198,546 194,536 Q192,522 196,510 Z" fill="url(#furBody)"/>
+      <ellipse cx="171" cy="538" rx="9" ry="6" fill="#D9A8AE"/>
+      <ellipse cx="201" cy="538" rx="9" ry="6" fill="#D9A8AE"/>
+    </g>
+
+    <!-- fingers wrapping the front of the body (rigid with hand) -->
+    <g id="fingersFront">
+      <path d="M258,438 Q210,432 168,444 Q160,452 168,460 Q212,450 256,458 Z" fill="url(#skinFinger)" stroke="#7C563C" stroke-width="1"/>
+      <path d="M260,458 Q206,454 160,468 Q152,477 161,484 Q210,472 258,478 Z" fill="url(#skinFinger)" stroke="#7C563C" stroke-width="1"/>
+      <path d="M262,478 Q210,478 168,492 Q161,500 170,506 Q214,494 260,498 Z" fill="url(#skinFinger)" stroke="#7C563C" stroke-width="1"/>
+      <!-- thumb on left -->
+      <path d="M140,426 Q126,436 128,456 Q132,472 148,470 Q158,462 156,442 Q152,428 140,426 Z" fill="url(#skinFinger)" stroke="#7C563C" stroke-width="1"/>
+      <!-- knuckle creases -->
+      <path d="M196,446 q6,4 0,8 M196,468 q6,4 0,8 M200,488 q6,4 0,8" stroke="#8A6144" stroke-width="1.2" fill="none" opacity="0.7"/>
+    </g>
+  </g>
+
+
+  <!-- CORRUPTION OVERLAYS -->
+  <rect id="duskOverlay" x="0" y="0" width="390" height="700" fill="#12070C" opacity="0"/>
+  <radialGradient id="redvig" cx="0.5" cy="0.46" r="0.72">
+    <stop offset="0" stop-color="#400000" stop-opacity="0"/>
+    <stop offset="0.7" stop-color="#400000" stop-opacity="0"/>
+    <stop offset="1" stop-color="#5E0505" stop-opacity="0.55"/>
+  </radialGradient>
+  <rect id="redVigRect" x="0" y="0" width="390" height="700" fill="url(#redvig)" opacity="0"/>
+
+  <!-- VIGNETTE -->
+  <rect x="0" y="0" width="390" height="700" fill="url(#vig)"/>
+
+    </svg>
+  </div>
+
+  <div class="hud-top">
+    <p class="hud-title">HAMSTERSHAKER<span class="tm">™</span></p>
+    <div class="meter-frame"><div class="meter-fill" id="meterFill"></div></div>
+    <p class="hud-sub" id="hudSub">HAMSTERSHAKER METER — 0%</p>
+  </div>
+
+  <div class="crosshair"></div>
+  <p class="subtitle" id="subtitle"></p>
+  <div class="flash" id="flash"></div>
+
+  <div class="hud-bottom">
+    <div class="stats-row">
+      <span><b id="statTotal">0</b> SHAKEN</span>
+      <span>BEST <b id="statBest">—</b></span>
+      <span>SESSION <b id="statStreak">0</b></span>
+    </div>
+    <div class="tiny-row">
+      <button id="enableBtn" class="enable-btn" style="display:none;">ENABLE SHAKE SENSOR</button>
+      <button id="soundToggle">SOUND: ON</button>
+      <button id="resetBtn">RESET</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const sceneCam = document.getElementById('sceneCam');
+  const armGroup = document.getElementById('armGroup');
+  const hamsterLag = document.getElementById('hamsterLag');
+  const faceIdle = document.getElementById('faceIdle');
+  const faceAlarmed = document.getElementById('faceAlarmed');
+  const faceScream = document.getElementById('faceScream');
+  const viewport = document.getElementById('viewport');
+  const meterFill = document.getElementById('meterFill');
+  const hudSub = document.getElementById('hudSub');
+  const subtitle = document.getElementById('subtitle');
+  const flash = document.getElementById('flash');
+  const enableBtn = document.getElementById('enableBtn');
+  const soundToggle = document.getElementById('soundToggle');
+  const statTotal = document.getElementById('statTotal');
+  const statBest = document.getElementById('statBest');
+  const statStreak = document.getElementById('statStreak');
+  const resetBtn = document.getElementById('resetBtn');
+  const houseGroup = document.getElementById('houseGroup');
+  const houseWindow = document.getElementById('houseWindow');
+  const duskOverlay = document.getElementById('duskOverlay');
+  const redVigRect = document.getElementById('redVigRect');
+  const eyesCorrupt = document.getElementById('eyesCorrupt');
+  const hudTitle = document.querySelector('.hud-title');
+
+  let fillPct = 0;
+  let sessionStreak = 0, total = 0, bestMs = null, ritualStart = null;
+  let lastPulse = 0, soundOn = true, lastFlavorIdx = -1;
+  let shakeActivity = 0;
+  let subtitleTimer = null;
+
+  const FLAVOR_STAGES = [
+    [ // stage 0 — silly
+      "The hamster forgives you. Probably.",
+      "Cheek pouches at maximum capacity.",
+      "Somewhere, a tiny wheel spins in solidarity.",
+      "A sunflower seed achieves low orbit.",
+      "Fluff levels exceed recommended limits.",
+      "10/10 chaos. The hamster left a review."
+    ],
+    [ // stage 1 — uneasy
+      "It liked that. Too much.",
+      "The grass leans closer to listen.",
+      "The hamster is smiling. You didn't draw that.",
+      "The sun is lower than it was. You've been here minutes.",
+      "Something in the field shifted its weight."
+    ],
+    [ // stage 2 — the house
+      "The house was not there before.",
+      "You brought it here.",
+      "The hamster remembers the house.",
+      "Do not look at the window.",
+      "The treeline is nearer. Don't check."
+    ],
+    [ // stage 3 — the litany
+      "KEEP. SHAKING.",
+      "IT IS ALMOST DONE.",
+      "THE HAMSTER IS THE ONLY WAY OUT.",
+      "YOU KNOW WHY YOU'RE HERE.",
+      "DO NOT STOP."
+    ]
+  ];
+  const PROMPT_STAGES = [
+    ["Shake the hamster.","Keep shaking.","The meter hungers."],
+    ["Again.","It isn't finished.","Shake it. Gently. Or don't."],
+    ["The window is watching you rest.","Shaking keeps it away.","Do not stop for long."],
+    ["SHAKE.","DO NOT STOP.","IT IS SO CLOSE NOW."]
+  ];
+  function stage(){ return Math.min(3, sessionStreak >= 6 ? 3 : sessionStreak >= 3 ? 2 : sessionStreak >= 1 ? 1 : 0); }
+
+
+  function showSubtitle(text, holdMs, dread){
+    subtitle.textContent = text;
+    subtitle.classList.toggle('dread', !!dread);
+    subtitle.classList.add('show');
+    if(subtitleTimer) clearTimeout(subtitleTimer);
+    subtitleTimer = setTimeout(()=> subtitle.classList.remove('show'), holdMs || 2600);
+  }
+
+  // ---------- audio ----------
+  let actx=null, carrier=null, carrier2=null, c2Gain=null, amGain=null, modOsc=null, modConst=null, masterYellGain=null, droneGain=null, audioReady=false;
+  function ctx(){ if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); } return actx; }
+  function ensureYellNodes(){
+    if(audioReady) return;
+    const ac = ctx();
+    carrier = ac.createOscillator(); carrier.type='sawtooth'; carrier.frequency.value=500;
+    amGain = ac.createGain(); amGain.gain.value=0;
+    modOsc = ac.createOscillator(); modOsc.type='square'; modOsc.frequency.value=22;
+    const modDepth = ac.createGain(); modDepth.gain.value=0.5;
+    modConst = ac.createConstantSource(); modConst.offset.value=0.5;
+    modOsc.connect(modDepth).connect(amGain.gain);
+    modConst.connect(amGain.gain);
+    masterYellGain = ac.createGain(); masterYellGain.gain.value=0.0001;
+    carrier.connect(amGain);
+    carrier2 = ac.createOscillator(); carrier2.type='sawtooth'; carrier2.frequency.value=507;
+    c2Gain = ac.createGain(); c2Gain.gain.value=0;
+    carrier2.connect(c2Gain).connect(amGain);
+    amGain.connect(masterYellGain).connect(ac.destination);
+    const d1 = ac.createOscillator(); d1.type='sine'; d1.frequency.value=52;
+    const d2 = ac.createOscillator(); d2.type='sine'; d2.frequency.value=53.3;
+    droneGain = ac.createGain(); droneGain.gain.value=0.0001;
+    d1.connect(droneGain); d2.connect(droneGain); droneGain.connect(ac.destination);
+    d1.start(); d2.start();
+    carrier.start(); carrier2.start(); modOsc.start(); modConst.start();
+    audioReady = true;
+  }
+  function updateYell(){
+    if(!audioReady) return;
+    const ac = ctx();
+    const g = soundOn ? Math.max(0, shakeActivity-0.1)*0.22 : 0;
+    const f = 440 + shakeActivity*520;
+    const mf = 14 + shakeActivity*60;
+    try{
+      masterYellGain.gain.setTargetAtTime(g, ac.currentTime, 0.09);
+      carrier.frequency.setTargetAtTime(f, ac.currentTime, 0.09);
+      carrier2.frequency.setTargetAtTime(f*1.013 + 6, ac.currentTime, 0.09);
+      c2Gain.gain.setTargetAtTime(stage() >= 2 ? 0.8 : 0, ac.currentTime, 0.3);
+      modOsc.frequency.setTargetAtTime(mf, ac.currentTime, 0.12);
+      droneGain.gain.setTargetAtTime(soundOn ? stage()*0.028 : 0, ac.currentTime, 0.6);
+    }catch(e){}
+  }
+  function squeak(intensity){
+    if(!soundOn) return;
+    try{
+      const ac = ctx(); const t0 = ac.currentTime;
+      const osc = ac.createOscillator(); const gain = ac.createGain();
+      osc.type='triangle';
+      const base = 650 + intensity*450 + Math.random()*120;
+      osc.frequency.setValueAtTime(base, t0);
+      osc.frequency.exponentialRampToValueAtTime(base*1.8, t0+0.07);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.09, t0+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+0.14);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(t0); osc.stop(t0+0.15);
+    }catch(e){}
+  }
+  function lowBoom(){
+    if(!soundOn) return;
+    try{
+      const ac = ctx(); const t0 = ac.currentTime;
+      const osc = ac.createOscillator(); const gain = ac.createGain();
+      osc.type='sine';
+      osc.frequency.setValueAtTime(120, t0);
+      osc.frequency.exponentialRampToValueAtTime(38, t0+0.5);
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.exponentialRampToValueAtTime(0.28, t0+0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+0.8);
+      osc.connect(gain).connect(ac.destination);
+      osc.start(t0); osc.stop(t0+0.85);
+    }catch(e){}
+  }
+
+  soundToggle.addEventListener('click', ()=>{
+    soundOn = !soundOn;
+    soundToggle.textContent = 'SOUND: ' + (soundOn ? 'ON' : 'OFF');
+  });
+
+  // ---------- storage ----------
+  async function loadStats(){
+    try{
+      const r = await window.storage.get('shake-the-hamster-stats');
+      if(r && r.value){
+        const d = JSON.parse(r.value);
+        total = d.total||0; bestMs = d.bestMs||null;
+        renderStats();
+      }
+    }catch(e){}
+  }
+  async function saveStats(){
+    try{ await window.storage.set('shake-the-hamster-stats', JSON.stringify({total, bestMs})); }catch(e){}
+  }
+  function renderStats(){
+    statTotal.textContent = total;
+    statBest.textContent = bestMs ? (bestMs/1000).toFixed(1)+'s' : '—';
+    statStreak.textContent = sessionStreak;
+  }
+
+  function setFill(v){
+    fillPct = Math.max(0, Math.min(100, v));
+    meterFill.style.width = fillPct + '%';
+    hudSub.textContent = 'HAMSTERSHAKER METER — ' + Math.round(fillPct) + '%';
+  }
+
+  function pulse(strength){
+    const now = performance.now();
+    if(now - lastPulse < 55) return;
+    lastPulse = now;
+    if(!ritualStart) ritualStart = now;
+    ensureYellNodes();
+    squeak(strength);
+    if(navigator.vibrate) navigator.vibrate(14);
+    shakeActivity = Math.min(1, shakeActivity + 0.22 + strength*0.18);
+    rawTargetMag = Math.min(1, rawTargetMag + 0.3 + strength*0.3);
+    setFill(fillPct + 4 + strength*6);
+    if(fillPct >= 100){ completePouf(); }
+  }
+
+  function completePouf(){
+    const elapsed = ritualStart ? performance.now() - ritualStart : null;
+    ritualStart = null;
+    total += 1; sessionStreak += 1;
+    if(elapsed && (!bestMs || elapsed < bestMs)) bestMs = elapsed;
+    renderStats(); saveStats();
+    lowBoom();
+    if(navigator.vibrate) navigator.vibrate([40,30,40,30,60]);
+
+    flash.animate([{opacity:0},{opacity:0.75},{opacity:0}], {duration:420, easing:'ease-out'});
+
+    const pool = FLAVOR_STAGES[stage()];
+    let idx = Math.floor(Math.random()*pool.length);
+    if(idx === lastFlavorIdx) idx = (idx+1)%pool.length;
+    lastFlavorIdx = idx;
+    showSubtitle(pool[idx], 3200, stage() >= 3);
+    applyCorruption();
+    setFill(0);
+  }
+
+  // ---------- corruption ----------
+  function applyCorruption(){
+    const s = stage();
+    duskOverlay.setAttribute('opacity', (s*0.14).toFixed(2));
+    redVigRect.setAttribute('opacity', s >= 2 ? '1' : '0');
+    houseGroup.setAttribute('opacity', s >= 2 ? '1' : '0');
+    houseWindow.setAttribute('opacity', s >= 3 ? '1' : '0');
+    eyesCorrupt.setAttribute('opacity', s >= 3 ? '1' : '0');
+  }
+
+  const ashes = [];
+  function spawnAsh(){
+    if(stage() < 1 || ashes.length > 14) return;
+    const a = document.createElement('div');
+    a.className='ash';
+    const x = Math.random()*100;
+    a.style.left = x+'%';
+    a.style.top = (70+Math.random()*30)+'%';
+    viewport.appendChild(a);
+    ashes.push(a);
+    const dur = 6000+Math.random()*5000;
+    a.animate([
+      {transform:'translate(0,0)', opacity:0},
+      {opacity:0.5, offset:0.15},
+      {opacity:0.4, offset:0.8},
+      {transform:'translate('+(Math.random()*40-20)+'px, -'+(300+Math.random()*250)+'px)', opacity:0}
+    ], {duration:dur, easing:'linear'});
+    setTimeout(()=>{ a.remove(); ashes.splice(ashes.indexOf(a),1); }, dur);
+  }
+  setInterval(spawnAsh, 900);
+
+  let glitchLock = false;
+  function maybeGlitch(){
+    if(stage() < 2 || glitchLock || Math.random() > 0.35) return;
+    glitchLock = true;
+    const orig = hudSub.textContent;
+    hudTitle.classList.add('glitch');
+    hudSub.textContent = 'IT HUNGERS — ' + Math.round(fillPct) + '%';
+    setTimeout(()=>{
+      hudSub.textContent = orig;
+      hudTitle.classList.remove('glitch');
+      glitchLock = false;
+    }, 260 + Math.random()*240);
+  }
+  setInterval(maybeGlitch, 5000);
+
+  // ---------- logic tick ----------
+  let rawTargetMag = 0;
+  let rawTarget = {x:0,y:0,rot:0};
+  let promptCooldown = 0;
+  setInterval(()=>{
+    if(fillPct > 0) setFill(fillPct - 0.6);
+    shakeActivity = Math.max(0, shakeActivity - 0.09);
+    rawTargetMag = Math.max(0, rawTargetMag - 0.14);
+
+    const scream = shakeActivity > 0.45, alarmed = shakeActivity > 0.15;
+    faceIdle.setAttribute('opacity', (!alarmed && !scream) ? '1' : '0');
+    faceAlarmed.setAttribute('opacity', (alarmed && !scream) ? '1' : '0');
+    faceScream.setAttribute('opacity', scream ? '1' : '0');
+
+    const mag = rawTargetMag * 11;
+    rawTarget.x = (Math.random()*2-1)*mag;
+    rawTarget.y = (Math.random()*2-1)*mag;
+    rawTarget.rot = (Math.random()*2-1)*rawTargetMag*6;
+
+    // idle prompts like the game's nagging voice
+    promptCooldown -= 90;
+    if(shakeActivity < 0.05 && fillPct < 5 && promptCooldown <= 0){
+      const pp = PROMPT_STAGES[stage()];
+      showSubtitle(pp[Math.floor(Math.random()*pp.length)], 2000, stage() >= 3);
+      promptCooldown = 6000 + Math.random()*4000;
+    }
+  }, 90);
+
+  // ---------- physics: rigid arm vs dangling hamster ----------
+  const handSpring = {x:0,y:0,rot:0,vx:0,vy:0,vrot:0};
+  const bodySpring = {x:0,y:0,rot:0,vx:0,vy:0,vrot:0};
+  function stepSpring(s, tx, ty, trot, stiffness, damping, dt){
+    s.vx += ((tx - s.x)*stiffness - s.vx*damping)*dt;
+    s.vy += ((ty - s.y)*stiffness - s.vy*damping)*dt;
+    s.vrot += ((trot - s.rot)*stiffness - s.vrot*damping)*dt;
+    s.x += s.vx*dt; s.y += s.vy*dt; s.rot += s.vrot*dt;
+  }
+
+  let lastT = performance.now();
+  function raf(now){
+    let dt = Math.min((now - lastT)/1000, 0.04);
+    lastT = now;
+
+    // idle breathing bob on the arm
+    const idleBobY = Math.sin(now*0.0016)*3;
+    const idleBobRot = Math.sin(now*0.0011)*0.6;
+
+    stepSpring(handSpring, rawTarget.x, rawTarget.y + idleBobY, rawTarget.rot + idleBobRot, 420, 24, dt);
+    stepSpring(bodySpring, rawTarget.x*1.2, rawTarget.y*1.25 + idleBobY, rawTarget.rot*1.3 + idleBobRot, 55, 5, dt);
+
+    armGroup.setAttribute('transform',
+      `translate(${handSpring.x.toFixed(2)},${handSpring.y.toFixed(2)}) rotate(${handSpring.rot.toFixed(2)} 300 640)`);
+    // lag = body minus hand (nested inside armGroup)
+    const lx = bodySpring.x - handSpring.x;
+    const ly = bodySpring.y - handSpring.y;
+    const lr = bodySpring.rot - handSpring.rot;
+    const squash = 1 + Math.sin(now*0.03)*shakeActivity*0.05;
+    hamsterLag.setAttribute('transform',
+      `translate(${lx.toFixed(2)},${(ly).toFixed(2)}) rotate(${lr.toFixed(2)} 186 468) scale(1,${squash.toFixed(3)})`);
+
+    // camera judder
+    if(shakeActivity > 0.02){
+      const cx = (Math.random()*2-1)*shakeActivity*3;
+      const cy = (Math.random()*2-1)*shakeActivity*3;
+      const cr = (Math.random()*2-1)*shakeActivity*0.4;
+      sceneCam.style.transform = `translate(${cx.toFixed(2)}px,${cy.toFixed(2)}px) rotate(${cr.toFixed(2)}deg) scale(${(1+shakeActivity*0.015).toFixed(3)})`;
+    } else {
+      sceneCam.style.transform = `translateY(${(Math.sin(now*0.0016)*1.5).toFixed(2)}px)`;
+    }
+
+    if(stage() >= 2){
+      redVigRect.setAttribute('opacity', (0.5 + shakeActivity*0.5 + Math.sin(now*0.004)*0.12).toFixed(2));
+    }
+    updateYell();
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+
+  // ---------- input: drag-shake anywhere ----------
+  let dragging=false, lastX=0, lastY=0, lastMoveT=0;
+  viewport.addEventListener('pointerdown',(e)=>{
+    if(e.target.tagName === 'BUTTON') return;
+    dragging=true; lastX=e.clientX; lastY=e.clientY; lastMoveT=performance.now();
+    pulse(0.5);
+  });
+  window.addEventListener('pointermove',(e)=>{
+    if(!dragging) return;
+    const now=performance.now(); const dt=now-lastMoveT;
+    if(dt<12) return;
+    const speed = Math.hypot(e.clientX-lastX, e.clientY-lastY)/dt;
+    lastX=e.clientX; lastY=e.clientY; lastMoveT=now;
+    if(speed>0.35){ pulse(Math.min(1, speed/2.5)); }
+  });
+  window.addEventListener('pointerup',()=>{dragging=false;});
+  window.addEventListener('pointercancel',()=>{dragging=false;});
+
+  // ---------- input: device motion ----------
+  let lastAccel=null;
+  function motionHandler(e){
+    const a = e.accelerationIncludingGravity || e.acceleration;
+    if(!a) return;
+    if(lastAccel){
+      const dx=a.x-lastAccel.x, dy=a.y-lastAccel.y, dz=a.z-lastAccel.z;
+      const delta = Math.sqrt(dx*dx+dy*dy+dz*dz);
+      if(delta>12){ pulse(Math.min(1, delta/40)); }
+    }
+    lastAccel=a;
+  }
+  function startMotion(){
+    window.addEventListener('devicemotion', motionHandler);
+    showSubtitle('Sensor ready. Shake the hamster.', 2400);
+  }
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function'){
+    enableBtn.style.display='inline-block';
+    enableBtn.addEventListener('click', async ()=>{
+      try{
+        const state = await DeviceMotionEvent.requestPermission();
+        if(state==='granted'){ enableBtn.style.display='none'; startMotion(); }
+        else{ showSubtitle('Sensor denied. Drag to shake instead.', 2600); }
+      }catch(e){ showSubtitle('Sensor unavailable. Drag to shake instead.', 2600); }
+    });
+  } else if ('DeviceMotionEvent' in window) {
+    startMotion();
+  }
+
+  resetBtn.addEventListener('click', async ()=>{
+    total=0; bestMs=null; sessionStreak=0;
+    renderStats(); await saveStats();
+    applyCorruption();
+    setFill(0);
+    showSubtitle('The counter forgets. The hamster remembers.', 2600);
+  });
+
+  loadStats();
+  setFill(0);
+  renderStats();
+  showSubtitle('Shake the hamster.', 3000);
+})();
+</script>
+</body>
+</html>
