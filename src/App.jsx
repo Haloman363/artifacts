@@ -9,6 +9,9 @@ import ClaudeTamagotchi from "./artifacts/ClaudeTamagotchi.jsx";
 import CarMaintenance from "./artifacts/CarMaintenance.jsx";
 import Peptides from "./artifacts/Peptides.jsx";
 import SavingsBuckets from "./artifacts/SavingsBuckets.jsx";
+import HamsterShaker from "./artifacts/HamsterShaker.jsx";
+import Dolos21 from "./dolos21/Dolos21.jsx";
+import ZombiesEEManual from "./artifacts/ZombiesEEManual.jsx";
 import BackButton from "./artifacts/BackButton.jsx";
 
 function ArtifactLayout() {
@@ -36,6 +39,9 @@ export default function App() {
         <Route path="/car-maintenance" element={<CarMaintenance />} />
         <Route path="/peptides" element={<Peptides />} />
         <Route path="/savings" element={<SavingsBuckets />} />
+        <Route path="/hamstershaker" element={<HamsterShaker />} />
+        <Route path="/dolos21" element={<Dolos21 />} />
+        <Route path="/zombies-ee-manual" element={<ZombiesEEManual />} />
       </Route>
     </Routes>
   );

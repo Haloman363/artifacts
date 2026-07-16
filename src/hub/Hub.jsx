@@ -57,6 +57,24 @@ const APPS = [
     title: "Savings",
     bg: "bg-yellow-900",
   },
+  {
+    path: "/dolos21",
+    icon: "🂡",
+    title: "Dolos://21",
+    bg: "bg-emerald-950",
+  },
+  {
+    path: "/hamstershaker",
+    icon: "🐹",
+    title: "Hamstershaker",
+    bg: "bg-stone-900",
+  },
+  {
+    path: "/zombies-ee-manual",
+    icon: "🧟",
+    title: "Zombies EE Manual",
+    bg: "bg-teal-900",
+  },
 ];
 
 export default function Hub() {
