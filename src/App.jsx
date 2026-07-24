@@ -1,17 +1,17 @@
 import { Routes, Route, Outlet } from "react-router-dom";
 import Hub from "./hub/Hub.jsx";
-import LunchQuest from "./artifacts/LunchQuest.tsx";
-import NickMeasurement from "./artifacts/NickMeasurement.jsx";
-import BrainrotTranslator from "./artifacts/BrainrotTranslator.tsx";
-import SubnetCalc from "./artifacts/SubnetCalc.tsx";
-import Pomodoro from "./artifacts/Pomodoro.jsx";
-import ClaudeTamagotchi from "./artifacts/ClaudeTamagotchi.jsx";
-import CarMaintenance from "./artifacts/CarMaintenance.jsx";
-import Peptides from "./artifacts/Peptides.jsx";
-import SavingsBuckets from "./artifacts/SavingsBuckets.jsx";
-import HamsterShaker from "./artifacts/HamsterShaker.jsx";
+import LunchQuest from "./artifacts/lunch-quest/LunchQuest.tsx";
+import NickMeasurement from "./artifacts/nick-measurement/NickMeasurement.jsx";
+import BrainrotTranslator from "./artifacts/brainrot/BrainrotTranslator.tsx";
+import SubnetCalc from "./artifacts/subnet-calc/SubnetCalc.tsx";
+import Pomodoro from "./artifacts/pomodoro/Pomodoro.jsx";
+import ClaudeTamagotchi from "./artifacts/tamagotchi/ClaudeTamagotchi.jsx";
+import CarMaintenance from "./artifacts/car-maintenance/CarMaintenance.jsx";
+import Peptides from "./artifacts/peptides/Peptides.jsx";
+import SavingsBuckets from "./artifacts/savings-buckets/SavingsBuckets.jsx";
+import HamsterShaker from "./artifacts/hamstershaker/HamsterShaker.jsx";
 import Dolos21 from "./dolos21/Dolos21.jsx";
-import ZombiesEEManual from "./artifacts/ZombiesEEManual.jsx";
+import ZombiesEEManual from "./artifacts/zombies-ee-manual/ZombiesEEManual.jsx";
 import BackButton from "./artifacts/BackButton.jsx";
 
 function ArtifactLayout() {
