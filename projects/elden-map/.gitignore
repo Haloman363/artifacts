@@ -1,0 +1,5 @@
+node_modules/
+dist/
+proxmox_mcp.log
+.env
+.env.local

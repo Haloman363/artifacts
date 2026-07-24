@@ -1,0 +1,23 @@
+@import 'mapbox-gl/dist/mapbox-gl.css';
+
+:root {
+  --color-black: #040200;
+  --color-brown-dark: #27170d;
+  --color-gold-burnt: #bd6707;
+  --color-gold-bright: #f9c043;
+  --color-gold-accent: #ed8a09;
+  --color-indigo: #1a1a2e;
+  --font-main: 'Cinzel', serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-black);
+  font-family: var(--font-main);
+  color: var(--color-gold-bright);
+}
