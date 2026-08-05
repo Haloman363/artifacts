@@ -21,31 +21,44 @@ Installable to a phone home screen; each app is reachable from a tile grid on th
 | Dolos://21 | `/dolos21` | Terminal-styled blackjack game |
 | Hamstershaker | `/hamstershaker` | Hamster clicker game |
 | Zombies EE Manual | `/zombies-ee-manual` | CoD Zombies easter egg step guide |
+| Elden Map | `/elden-map` | Elden Ring–styled GPS navigation with turn-by-turn directions |
 
 State is stored per-app in `localStorage` — nothing leaves the device, and there is no backend.
 
-### Standalone projects
+### Mapbox token (Elden Map)
 
-`projects/` holds apps that are **not** part of the hub build and are not reachable from the
-tile grid. They have their own dependencies and build pipelines:
+Elden Map needs a Mapbox token for map tiles, geocoding search, and driving directions.
+Without one the route renders an explanatory notice instead of a broken map; every other
+artifact is unaffected.
 
-| Project | Status |
-|---------|--------|
-| `elden-map/` | Elden Ring map with routing and audio. React 19 + `mapbox-gl`; needs a `VITE_MAPBOX_TOKEN` in `.env`. Not ported to the hub. |
-| `cod-zombies-ee-manual/` | Original static HTML; ported to the hub as `/zombies-ee-manual` |
-| `dolos21-for-claude-code/` | Original standalone build; ported to the hub as `/dolos21` |
-| `hamstershaker/` | Original static HTML; ported to the hub as `/hamstershaker` |
-
-The last three are kept as the originals their hub versions were derived from. `elden-map` is
-the only one with no hub equivalent — it pins React 19 against the hub's React 18 and needs a
-Mapbox API token, so it builds and runs on its own:
+**Local development:**
 
 ```bash
-cd projects/elden-map
-npm install
-echo "VITE_MAPBOX_TOKEN=your_token_here" > .env
-npm run dev
+cp projects/elden-map/.env.example .env
+# then edit .env and set your pk. token
 ```
+
+**Deployed builds:** the workflow reads the `MAPBOX_TOKEN` repository secret
+(Settings → Secrets and variables → Actions) and passes it to the build as
+`VITE_MAPBOX_TOKEN`.
+
+> Vite inlines `VITE_*` values into the JavaScript bundle, so this token **is visible to
+> anyone who loads the site** — that is unavoidable for a static build with no backend. The
+> secret only keeps it out of git. Protect it with **URL restrictions** in the Mapbox
+> dashboard (Account → Tokens → URL restrictions) scoped to `https://haloman363.github.io/*`,
+> and use a public `pk.` token — never a secret `sk.` one.
+
+### Standalone projects
+
+`projects/` holds the original standalone versions of apps that were later ported into the
+hub. They keep their own dependencies and build pipelines and are not routed or deployed:
+
+| Project | Ported to |
+|---------|-----------|
+| `elden-map/` | `/elden-map` |
+| `cod-zombies-ee-manual/` | `/zombies-ee-manual` |
+| `dolos21-for-claude-code/` | `/dolos21` |
+| `hamstershaker/` | `/hamstershaker` |
 
 ## Development
 
@@ -85,6 +98,11 @@ projects/
 3. Add a tile to the `APPS` array in `src/hub/Hub.jsx`
 
 Steps 2 and 3 are both required — a route without a tile is unreachable from the hub.
+
+If an artifact pulls in a heavy dependency, import it with `lazy()` + `<Suspense>` rather
+than a plain import. Workbox refuses to precache any single asset over 2 MB, so a large
+library in the main bundle silently breaks offline support for the whole PWA. Elden Map does
+this for `mapbox-gl` (~1.5 MB), which keeps the shared bundle near 536 kB.
 
 If the app needs its own dependencies or build config, put it in `projects/` instead.
 

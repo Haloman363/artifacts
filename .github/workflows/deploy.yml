@@ -30,7 +30,11 @@ jobs:
 
       - run: npm ci
 
+      # Vite inlines VITE_* values into the bundle, so this token is public by
+      # design. Restrict it by URL in the Mapbox dashboard, not by hiding it.
       - run: npm run build
+        env:
+          VITE_MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
 
       - uses: actions/configure-pages@v5
 

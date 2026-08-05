@@ -75,6 +75,12 @@ const APPS = [
     title: "Zombies EE Manual",
     bg: "bg-teal-900",
   },
+  {
+    path: "/elden-map",
+    icon: "✦",
+    title: "Elden Map",
+    bg: "bg-amber-950",
+  },
 ];
 
 export default function Hub() {

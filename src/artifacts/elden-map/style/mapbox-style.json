@@ -1,0 +1,114 @@
+{
+  "version": 8,
+  "name": "Elden Ring",
+  "glyphs": "mapbox://fonts/mapbox/{fontstack}/{range}",
+  "sprite": "mapbox://sprites/mapbox/dark-v11",
+  "sources": {
+    "mapbox": {
+      "type": "vector",
+      "url": "mapbox://mapbox.mapbox-streets-v8"
+    }
+  },
+  "layers": [
+    {
+      "id": "background",
+      "type": "background",
+      "paint": { "background-color": "#27170d" }
+    },
+    {
+      "id": "landuse",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "landuse",
+      "paint": { "fill-color": "#1e1006", "fill-opacity": 0.8 }
+    },
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": { "fill-color": "#1a1a2e" }
+    },
+    {
+      "id": "water-shadow",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "water",
+      "paint": { "fill-color": "#12122a", "fill-translate": [2, 2], "fill-opacity": 0.4 }
+    },
+    {
+      "id": "road-residential",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "filter": ["in", "class", "residential", "service", "track", "path"],
+      "paint": { "line-color": "#3a2510", "line-width": 1, "line-opacity": 0.6 }
+    },
+    {
+      "id": "road-secondary",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "filter": ["in", "class", "secondary", "tertiary", "street"],
+      "paint": { "line-color": "#6b4010", "line-width": 2 }
+    },
+    {
+      "id": "road-primary",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "filter": ["in", "class", "primary", "trunk"],
+      "paint": { "line-color": "#a06010", "line-width": 3 }
+    },
+    {
+      "id": "road-highway",
+      "type": "line",
+      "source": "mapbox",
+      "source-layer": "road",
+      "filter": ["==", "class", "motorway"],
+      "paint": { "line-color": "#bd6707", "line-width": 5, "line-blur": 1 }
+    },
+    {
+      "id": "building",
+      "type": "fill",
+      "source": "mapbox",
+      "source-layer": "building",
+      "paint": { "fill-color": "#1e1006", "fill-opacity": 0.5 }
+    },
+    {
+      "id": "place-labels",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "place_label",
+      "filter": ["in", "class", "city", "town", "village"],
+      "layout": {
+        "text-field": ["upcase", ["get", "name"]],
+        "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Regular"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 8, 10, 14, 14]
+      },
+      "paint": {
+        "text-color": "#f9c043",
+        "text-halo-color": "#040200",
+        "text-halo-width": 1.5
+      }
+    },
+    {
+      "id": "road-labels",
+      "type": "symbol",
+      "source": "mapbox",
+      "source-layer": "road",
+      "filter": ["in", "class", "primary", "secondary", "motorway"],
+      "layout": {
+        "text-field": ["upcase", ["get", "name"]],
+        "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Regular"],
+        "text-size": 11,
+        "symbol-placement": "line"
+      },
+      "paint": {
+        "text-color": "#ed8a09",
+        "text-halo-color": "#040200",
+        "text-halo-width": 1
+      }
+    }
+  ]
+}

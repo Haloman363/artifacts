@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "howler": "^2.2.4",
     "lucide-react": "^0.447.0",
+    "mapbox-gl": "^3.28.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^6.30.4"

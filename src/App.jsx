@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Routes, Route, Outlet } from "react-router-dom";
 import Hub from "./hub/Hub.jsx";
 import LunchQuest from "./artifacts/lunch-quest/LunchQuest.tsx";
@@ -12,6 +13,9 @@ import SavingsBuckets from "./artifacts/savings-buckets/SavingsBuckets.jsx";
 import HamsterShaker from "./artifacts/hamstershaker/HamsterShaker.jsx";
 import Dolos21 from "./artifacts/dolos21/Dolos21.jsx";
 import ZombiesEEManual from "./artifacts/zombies-ee-manual/ZombiesEEManual.jsx";
+// mapbox-gl is ~1.5MB; lazy-load so it is only fetched when this route opens
+// and stays out of the main bundle (which Workbox will not precache over 2MB).
+const EldenMap = lazy(() => import("./artifacts/elden-map/EldenMap.jsx"));
 import BackButton from "./artifacts/BackButton.jsx";
 
 function ArtifactLayout() {
@@ -42,6 +46,14 @@ export default function App() {
         <Route path="/hamstershaker" element={<HamsterShaker />} />
         <Route path="/dolos21" element={<Dolos21 />} />
         <Route path="/zombies-ee-manual" element={<ZombiesEEManual />} />
+        <Route
+          path="/elden-map"
+          element={
+            <Suspense fallback={<div style={{ padding: 24, color: "#bd6707" }}>Loading…</div>}>
+              <EldenMap />
+            </Suspense>
+          }
+        />
       </Route>
     </Routes>
   );

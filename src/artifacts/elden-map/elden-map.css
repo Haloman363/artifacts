@@ -1,0 +1,42 @@
+@import 'mapbox-gl/dist/mapbox-gl.css';
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&display=swap');
+
+/* Scoped to the artifact so the hub's other apps keep their own styling. */
+.elden-map-root {
+  --color-black: #040200;
+  --color-brown-dark: #27170d;
+  --color-gold-burnt: #bd6707;
+  --color-gold-bright: #f9c043;
+  --color-gold-accent: #ed8a09;
+  --color-indigo: #1a1a2e;
+  --font-main: 'Cinzel', serif;
+
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-black);
+  font-family: var(--font-main);
+  color: var(--color-gold-bright);
+}
+
+.elden-map-root *,
+.elden-map-root *::before,
+.elden-map-root *::after {
+  box-sizing: border-box;
+}
+
+/* Pulsing golden marker for the user's position (from the standalone app). */
+.elden-map-root .user-marker,
+.mapboxgl-marker.user-marker {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f9c043 0%, #ed8a09 60%, transparent 70%);
+  box-shadow: 0 0 12px 4px rgba(249, 192, 67, 0.6);
+  animation: elden-pulse 2s ease-in-out infinite;
+}
+
+@keyframes elden-pulse {
+  0%, 100% { transform: scale(0.9); opacity: 0.8; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
