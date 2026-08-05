@@ -24,6 +24,29 @@ Installable to a phone home screen; each app is reachable from a tile grid on th
 
 State is stored per-app in `localStorage` — nothing leaves the device, and there is no backend.
 
+### Standalone projects
+
+`projects/` holds apps that are **not** part of the hub build and are not reachable from the
+tile grid. They have their own dependencies and build pipelines:
+
+| Project | Status |
+|---------|--------|
+| `elden-map/` | Elden Ring map with routing and audio. React 19 + `mapbox-gl`; needs a `VITE_MAPBOX_TOKEN` in `.env`. Not ported to the hub. |
+| `cod-zombies-ee-manual/` | Original static HTML; ported to the hub as `/zombies-ee-manual` |
+| `dolos21-for-claude-code/` | Original standalone build; ported to the hub as `/dolos21` |
+| `hamstershaker/` | Original static HTML; ported to the hub as `/hamstershaker` |
+
+The last three are kept as the originals their hub versions were derived from. `elden-map` is
+the only one with no hub equivalent — it pins React 19 against the hub's React 18 and needs a
+Mapbox API token, so it builds and runs on its own:
+
+```bash
+cd projects/elden-map
+npm install
+echo "VITE_MAPBOX_TOKEN=your_token_here" > .env
+npm run dev
+```
+
 ## Development
 
 ```bash
@@ -46,7 +69,6 @@ src/
   artifacts/
     BackButton.jsx     shared layout chrome used by every artifact
     <app-slug>/        one folder per app, kebab-case
-  dolos21/             (predates the convention; still routed from App.jsx)
 projects/
   <project-name>/      standalone apps with their own package.json and build
 ```

@@ -10,7 +10,7 @@ import CarMaintenance from "./artifacts/car-maintenance/CarMaintenance.jsx";
 import Peptides from "./artifacts/peptides/Peptides.jsx";
 import SavingsBuckets from "./artifacts/savings-buckets/SavingsBuckets.jsx";
 import HamsterShaker from "./artifacts/hamstershaker/HamsterShaker.jsx";
-import Dolos21 from "./dolos21/Dolos21.jsx";
+import Dolos21 from "./artifacts/dolos21/Dolos21.jsx";
 import ZombiesEEManual from "./artifacts/zombies-ee-manual/ZombiesEEManual.jsx";
 import BackButton from "./artifacts/BackButton.jsx";
 

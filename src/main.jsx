@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
-import { installStorageShim } from "./dolos21/storageShim.js";
+import { installStorageShim } from "./artifacts/dolos21/storageShim.js";
 
 installStorageShim();
 

@@ -2976,13 +2976,13 @@ export default function Dolos21() {
           <div className="segfault">SEGMENTATION FAULT</div>
           <div className="sub red">(CORE DUMPED)</div>
           <div className="bootlog">
-            <div>> hands played: {game.stats.hands}</div>
-            <div>> hands won: {game.stats.won}</div>
-            <div>> trumps played: {game.stats.trumpsUsed || 0}</div>
-            <div>> closest call: {game.stats.lowestHP ?? 100} integrity</div>
-            <div>> highest bet faced: ×{game.stats.maxBetFaced || 1}</div>
-            <div>> integrity at failure: 0</div>
-            <div className="amber">> {corrupt("DOLOS RETAINS YOUR MEMORY. TRY AGAIN.", 0.08)}</div>
+            <div>{"> "}hands played: {game.stats.hands}</div>
+            <div>{"> "}hands won: {game.stats.won}</div>
+            <div>{"> "}trumps played: {game.stats.trumpsUsed || 0}</div>
+            <div>{"> "}closest call: {game.stats.lowestHP ?? 100} integrity</div>
+            <div>{"> "}highest bet faced: ×{game.stats.maxBetFaced || 1}</div>
+            <div>{"> "}integrity at failure: 0</div>
+            <div className="amber">{"> "}{corrupt("DOLOS RETAINS YOUR MEMORY. TRY AGAIN.", 0.08)}</div>
           </div>
           <button className="btn big" onClick={() => { sfx.blip(); startAct(game.act, game.stats, game.ngPlus); }}>▸ RESTART {ACTS[game.act].title.split("—")[0].trim()}</button>
         </div>
@@ -3000,15 +3000,15 @@ export default function Dolos21() {
           <div className="segfault">SEGMENTATION FAULT</div>
           <div className="sub red">(CORE DUMPED)</div>
           <div className="bootlog">
-            <div>> depth reached: {game.tier}</div>
-            <div>> sectors cleared: {sectors}</div>
-            <div>> hands played: {game.stats.hands}</div>
-            <div>> trumps played: {game.stats.trumpsUsed || 0}</div>
-            <div>> closest call: {game.stats.lowestHP ?? 100} integrity</div>
-            <div>> highest bet faced: ×{game.stats.maxBetFaced || 1}</div>
+            <div>{"> "}depth reached: {game.tier}</div>
+            <div>{"> "}sectors cleared: {sectors}</div>
+            <div>{"> "}hands played: {game.stats.hands}</div>
+            <div>{"> "}trumps played: {game.stats.trumpsUsed || 0}</div>
+            <div>{"> "}closest call: {game.stats.lowestHP ?? 100} integrity</div>
+            <div>{"> "}highest bet faced: ×{game.stats.maxBetFaced || 1}</div>
             {isBest
-              ? <div className="amber">> NEW PERSONAL BEST. IT WILL REMEMBER THIS TOO.</div>
-              : bestEndless && <div className="dim">> best: sector {bestEndless.tier} · {bestEndless.hands} hands</div>}
+              ? <div className="amber">{"> "}NEW PERSONAL BEST. IT WILL REMEMBER THIS TOO.</div>
+              : bestEndless && <div className="dim">{"> "}best: sector {bestEndless.tier} · {bestEndless.hands} hands</div>}
           </div>
           <div className="modebtns">
             <button className="btn big" onClick={() => { sfx.blip(); startEndless(); }}>▸ DESCEND AGAIN</button>
@@ -3027,14 +3027,14 @@ export default function Dolos21() {
           <div className="acttitle">DOLOS.SYS — PROCESS TERMINATED</div>
           {game.flawless && <div className="flag gimmickFlag" style={{ fontSize: 13 }}>FLAWLESS ACT — NOT ONE HAND LOST</div>}
           <div className="bootlog">
-            <div>> tartarus unmounted.</div>
-            <div>> hands played: {game.stats.hands} | won: {game.stats.won} | lost: {game.stats.lost}</div>
-            <div>> trumps played: {game.stats.trumpsUsed || 0}</div>
-            <div>> closest call: {game.stats.lowestHP ?? 100} integrity</div>
-            <div>> highest bet faced: ×{game.stats.maxBetFaced || 1}</div>
-            <div>> exit allocated. session released.</div>
-            <div className="amber">> ...i will shuffle again. i always do.</div>
-            <div className="amber">> NEW GAME+ UNLOCKED. IT GETS WORSE FROM HERE.</div>
+            <div>{"> "}tartarus unmounted.</div>
+            <div>{"> "}hands played: {game.stats.hands} | won: {game.stats.won} | lost: {game.stats.lost}</div>
+            <div>{"> "}trumps played: {game.stats.trumpsUsed || 0}</div>
+            <div>{"> "}closest call: {game.stats.lowestHP ?? 100} integrity</div>
+            <div>{"> "}highest bet faced: ×{game.stats.maxBetFaced || 1}</div>
+            <div>{"> "}exit allocated. session released.</div>
+            <div className="amber">{"> "}...i will shuffle again. i always do.</div>
+            <div className="amber">{"> "}NEW GAME+ UNLOCKED. IT GETS WORSE FROM HERE.</div>
           </div>
           <button className="btn big" onClick={() => setScreen("title")}>▸ DISCONNECT</button>
         </div>
@@ -3052,7 +3052,7 @@ export default function Dolos21() {
           {game.flawless && <div className="flag gimmickFlag" style={{ fontSize: 13 }}>FLAWLESS ACT — NOT ONE HAND LOST</div>}
           <div className="bootlog">
             {bridge && bridge.lines.map((l, i) => <div key={i}>{l}</div>)}
-            <div>> integrity remaining: {game.pHP}</div>
+            <div>{"> "}integrity remaining: {game.pHP}</div>
             {bridge && <div className="amber" style={{ marginTop: 6 }}>{bridge.next}</div>}
           </div>
           <button className="btn big" onClick={() => { sfx.blip(); startAct(game.act + 1, game.stats, game.ngPlus); }}>▸ DESCEND</button>
