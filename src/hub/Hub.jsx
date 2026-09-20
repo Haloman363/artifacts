@@ -81,6 +81,12 @@ const APPS = [
     title: "Elden Map",
     bg: "bg-amber-950",
   },
+  {
+    path: "/dog-vision",
+    icon: "🐕",
+    title: "Dog Vision",
+    bg: "bg-sky-900",
+  },
 ];
 
 export default function Hub() {
