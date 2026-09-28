@@ -1,0 +1,25 @@
+{
+  "name": "dither-kit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@gyng/ditherer-filters": "file:vendor/gyng-ditherer-filters-0.6.0.tgz",
+    "fflate": "^0.8.3",
+    "gifenc": "^1.0.3",
+    "lucide-react": "^1.48.0",
+    "mediabunny": "^1.60.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.1",
+    "vite-plugin-pwa": "^1.3.0"
+  }
+}

@@ -87,6 +87,13 @@ const APPS = [
     title: "Dog Vision",
     bg: "bg-sky-900",
   },
+  {
+    // Standalone app (projects/dither-kit), deployed next to the hub; not a router route.
+    href: "dither-kit/",
+    icon: "▦",
+    title: "Dither Kit",
+    bg: "bg-rose-950",
+  },
 ];
 
 export default function Hub() {
@@ -127,8 +134,8 @@ export default function Hub() {
         <div className="grid grid-cols-3 gap-6 mb-12">
           {APPS.map((app) => (
             <button
-              key={app.path}
-              onClick={() => navigate(app.path)}
+              key={app.path ?? app.href}
+              onClick={() => (app.href ? window.location.assign(import.meta.env.BASE_URL + app.href) : navigate(app.path))}
               className="flex flex-col items-center gap-2 active:scale-90 transition-transform"
             >
               <div className={`w-16 h-16 rounded-2xl ${app.bg} flex items-center justify-center text-3xl shadow-lg`}>

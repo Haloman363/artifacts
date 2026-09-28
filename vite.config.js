@@ -25,6 +25,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // projects/dither-kit is deployed under /artifacts/dither-kit/ with its own service worker;
+        // keep the hub's SPA fallback from answering its navigations.
+        navigateFallbackDenylist: [/^\/artifacts\/dither-kit\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

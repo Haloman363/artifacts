@@ -36,6 +36,14 @@ jobs:
         env:
           VITE_MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
 
+      # Standalone sub-app served at /artifacts/dither-kit/ (its engine is vendored, no token needed).
+      - name: Build Dither Kit
+        working-directory: projects/dither-kit
+        run: |
+          npm ci
+          npm run build
+          cp -r dist ../../dist/dither-kit
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
