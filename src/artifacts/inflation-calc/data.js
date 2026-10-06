@@ -1,7 +1,7 @@
 // Bundled so the app works offline (it's a PWA) — no network calls.
 
 // BLS CPI-U, U.S. city average, all items, annual averages (1982-84 = 100).
-// 2025 is the approximate annual average; "today" (2026) is a projection, see TODAY_YEAR.
+// 2025 is the annual average implied by the BLS-reported 2.7% change; "today" (2026) is a projection, see DEFAULT_RATE.
 export const CPI = {
   1913: 9.9, 1914: 10.0, 1915: 10.1, 1916: 10.9, 1917: 12.8, 1918: 15.1, 1919: 17.3, 1920: 20.0,
   1921: 17.9, 1922: 16.8, 1923: 17.1, 1924: 17.1, 1925: 17.5, 1926: 17.7, 1927: 17.4, 1928: 17.1,
@@ -23,7 +23,9 @@ export const CPI = {
 export const FIRST_YEAR = 1913;
 export const LAST_ACTUAL_YEAR = 2025;
 export const TODAY_YEAR = 2026;
-export const DEFAULT_RATE = 3.0; // assumed 2026 inflation, % — user-adjustable
+// 2026 projection over the 2025 average: Jan–Aug 2026 12-month CPI changes averaged ~3.3%
+// (2.4, 2.4, 3.3, 3.8, 4.2, 3.5, 3.4, 3.4). User-adjustable in the UI.
+export const DEFAULT_RATE = 3.3;
 
 export function cpiFor(year, rate = DEFAULT_RATE) {
   if (year >= TODAY_YEAR) return CPI[LAST_ACTUAL_YEAR] * (1 + rate / 100);
@@ -32,46 +34,47 @@ export function cpiFor(year, rate = DEFAULT_RATE) {
 
 // Rounded national averages (BLS, EIA, Census, NATO, USPS, The Economist, Fed. min wage).
 // `points` are [year, price]; values in between are interpolated, or held (step) for
-// prices that change in discrete jumps. `now` is an estimate for TODAY_YEAR.
+// prices that change in discrete jumps. `now` is the latest reading as of ~Sep 2026 (see
+// each item), used as the TODAY_YEAR price.
 export const ITEMS = [
   {
-    id: "gas", icon: "⛽", label: "Gallon of gas", now: 3.1,
-    points: [[1950, 0.27], [1960, 0.31], [1970, 0.36], [1980, 1.19], [1981, 1.35], [1990, 1.16], [2000, 1.51], [2008, 3.27], [2010, 2.79], [2012, 3.68], [2016, 2.14], [2020, 2.17], [2022, 3.95], [2024, 3.3]],
+    id: "gas", icon: "⛽", label: "Gallon of gas", now: 4.3, // AAA ~$4.28–4.48, Sep 2026 (spike); EIA runs a few cents lower
+    points: [[1950, 0.27], [1960, 0.31], [1970, 0.36], [1980, 1.19], [1981, 1.35], [1990, 1.16], [2000, 1.51], [2008, 3.27], [2010, 2.79], [2012, 3.68], [2016, 2.14], [2020, 2.17], [2022, 3.95], [2024, 3.3], [2025, 3.15]],
   },
   {
-    id: "eggs", icon: "🥚", label: "Dozen eggs", now: 3.2,
-    points: [[1980, 0.84], [1990, 1.0], [2000, 0.96], [2010, 1.78], [2015, 2.47], [2020, 1.47], [2022, 2.52], [2023, 2.67], [2024, 3.0]],
+    id: "eggs", icon: "🥚", label: "Dozen eggs", now: 2.2, // BLS Jul 2026: $2.19
+    points: [[1980, 0.84], [1990, 1.0], [2000, 0.96], [2010, 1.78], [2015, 2.47], [2020, 1.47], [2021, 1.67], [2022, 2.86], [2023, 2.8], [2024, 3.17], [2025, 4.71]],
   },
   {
-    id: "bread", icon: "🍞", label: "Loaf of bread (1 lb)", now: 2.0,
+    id: "bread", icon: "🍞", label: "Loaf of bread (1 lb)", now: 1.82, // BLS Aug 2026: $1.823/lb
     points: [[1980, 0.5], [1990, 0.7], [2000, 0.99], [2010, 1.38], [2020, 1.4], [2024, 1.95]],
   },
   {
-    id: "burger", icon: "🍔", label: "Big Mac", now: 5.8,
+    id: "burger", icon: "🍔", label: "Big Mac", now: 6.22, // The Economist Big Mac index, 2026
     points: [[1986, 1.6], [1990, 2.2], [2000, 2.54], [2010, 3.73], [2020, 5.71], [2024, 5.69]],
   },
   {
-    id: "movie", icon: "🎬", label: "Movie ticket", now: 11.5,
+    id: "movie", icon: "🎬", label: "Movie ticket", now: 11.5, // unverified estimate; sources disagree ($10.75 NATO vs. higher)
     points: [[1970, 1.55], [1980, 2.69], [1990, 4.23], [2000, 5.39], [2010, 7.89], [2019, 9.16], [2024, 11.31]],
   },
   {
-    id: "stamp", icon: "✉️", label: "First-class stamp", now: 0.78, step: true,
-    points: [[1950, 0.03], [1960, 0.04], [1970, 0.06], [1975, 0.1], [1980, 0.15], [1985, 0.22], [1990, 0.25], [1995, 0.32], [2000, 0.33], [2005, 0.37], [2010, 0.44], [2015, 0.49], [2020, 0.55], [2022, 0.6], [2024, 0.73]],
+    id: "stamp", icon: "✉️", label: "First-class stamp", now: 0.82, step: true, // 82¢ since Jul 12, 2026
+    points: [[1950, 0.03], [1960, 0.04], [1970, 0.06], [1975, 0.1], [1980, 0.15], [1985, 0.22], [1990, 0.25], [1995, 0.32], [2000, 0.33], [2005, 0.37], [2010, 0.44], [2015, 0.49], [2020, 0.55], [2022, 0.6], [2024, 0.73], [2025, 0.78]],
   },
   {
     id: "wage", icon: "🧾", label: "Minimum wage / hr", now: 7.25, step: true,
     points: [[1950, 0.75], [1956, 1.0], [1961, 1.15], [1963, 1.25], [1967, 1.4], [1968, 1.6], [1974, 2.0], [1975, 2.1], [1976, 2.3], [1978, 2.65], [1979, 2.9], [1980, 3.1], [1981, 3.35], [1990, 3.8], [1991, 4.25], [1996, 4.75], [1997, 5.15], [2007, 5.85], [2008, 6.55], [2009, 7.25]],
   },
   {
-    id: "rent", icon: "🏢", label: "Median rent / mo", now: 1500,
-    points: [[1960, 71], [1970, 108], [1980, 243], [1990, 447], [2000, 602], [2010, 855], [2020, 1100], [2024, 1420]],
+    id: "rent", icon: "🏢", label: "Median rent / mo", now: 1560, // estimate: ACS 2024 median gross rent $1,487 plus ~5%
+    points: [[1960, 71], [1970, 108], [1980, 243], [1990, 447], [2000, 602], [2010, 855], [2020, 1100], [2022, 1300], [2023, 1406], [2024, 1487]],
   },
   {
-    id: "car", icon: "🚙", label: "New car", now: 50000,
+    id: "car", icon: "🚙", label: "New car", now: 50100, // KBB average transaction price, Aug 2026: $50,089
     points: [[1970, 3400], [1980, 7600], [1990, 16500], [2000, 22000], [2010, 29000], [2020, 38000], [2024, 48400]],
   },
   {
-    id: "home", icon: "🏠", label: "New home (median)", now: 410000,
+    id: "home", icon: "🏠", label: "New home (median)", now: 399000, // Census Jan–Aug 2026 median ~$388k–425k
     points: [[1963, 18000], [1970, 23400], [1980, 64600], [1990, 122900], [2000, 169000], [2010, 221800], [2020, 336900], [2024, 420500]],
   },
 ];
