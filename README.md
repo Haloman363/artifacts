@@ -23,6 +23,7 @@ Installable to a phone home screen; each app is reachable from a tile grid on th
 | Zombies EE Manual | `/zombies-ee-manual` | CoD Zombies easter egg step guide |
 | Elden Map | `/elden-map` | Elden Ring–styled GPS navigation with turn-by-turn directions |
 | Dog Vision | `/dog-vision` | See photos or the live camera the way a dog does (dichromatic color) |
+| Inflation Calc | `/inflation-calc` | Convert dollars across years (CPI-U) and compare everyday prices to inflation |
 
 State is stored per-app in `localStorage` — nothing leaves the device, and there is no backend.
 
