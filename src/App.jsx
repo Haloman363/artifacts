@@ -14,6 +14,7 @@ import HamsterShaker from "./artifacts/hamstershaker/HamsterShaker.jsx";
 import Dolos21 from "./artifacts/dolos21/Dolos21.jsx";
 import ZombiesEEManual from "./artifacts/zombies-ee-manual/ZombiesEEManual.jsx";
 import DogVision from "./artifacts/dog-vision/DogVision.jsx";
+import InflationCalc from "./artifacts/inflation-calc/InflationCalc.jsx";
 // mapbox-gl is ~1.5MB; lazy-load so it is only fetched when this route opens
 // and stays out of the main bundle (which Workbox will not precache over 2MB).
 const EldenMap = lazy(() => import("./artifacts/elden-map/EldenMap.jsx"));
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/dolos21" element={<Dolos21 />} />
         <Route path="/zombies-ee-manual" element={<ZombiesEEManual />} />
         <Route path="/dog-vision" element={<DogVision />} />
+        <Route path="/inflation-calc" element={<InflationCalc />} />
         <Route
           path="/elden-map"
           element={

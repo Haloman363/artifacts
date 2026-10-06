@@ -88,6 +88,12 @@ const APPS = [
     bg: "bg-sky-900",
   },
   {
+    path: "/inflation-calc",
+    icon: "💸",
+    title: "Inflation Calc",
+    bg: "bg-orange-950",
+  },
+  {
     // Standalone app (projects/dither-kit), deployed next to the hub; not a router route.
     href: "dither-kit/",
     icon: "▦",
